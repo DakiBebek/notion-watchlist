@@ -191,10 +191,26 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         <input type="text" id="searchInput" oninput="renderItems()" placeholder="Cari anime, film, series..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition">
       </div>
-      <div class="flex items-center gap-1 p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs self-start">
-        <button onclick="setFormat('all')" id="fmt-all" class="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold shadow-sm">Semua Format</button>
-        <button onclick="setFormat('series')" id="fmt-series" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Series</button>
-        <button onclick="setFormat('movie')" id="fmt-movie" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Movie</button>
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <!-- Sort Dropdown -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-300">
+          <svg class="w-3.5 h-3.5 text-zinc-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
+          <span class="text-zinc-500 hidden sm:inline">Urutan:</span>
+          <select id="sortSelect" onchange="currentSort = this.value; renderItems();" class="bg-transparent text-xs text-zinc-200 font-medium focus:outline-none cursor-pointer pr-1">
+            <option value="updatedDesc" class="bg-zinc-900 text-zinc-200">Update Terbaru</option>
+            <option value="updatedAsc" class="bg-zinc-900 text-zinc-200">Update Terlama</option>
+            <option value="titleAsc" class="bg-zinc-900 text-zinc-200">Judul (A → Z)</option>
+            <option value="titleDesc" class="bg-zinc-900 text-zinc-200">Judul (Z → A)</option>
+            <option value="episodeDesc" class="bg-zinc-900 text-zinc-200">Episode (Tertinggi)</option>
+            <option value="episodeAsc" class="bg-zinc-900 text-zinc-200">Episode (Terendah)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-1 p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
+          <button onclick="setFormat('all')" id="fmt-all" class="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold shadow-sm">Semua Format</button>
+          <button onclick="setFormat('series')" id="fmt-series" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Series</button>
+          <button onclick="setFormat('movie')" id="fmt-movie" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Movie</button>
+        </div>
       </div>
     </div>
 
@@ -286,6 +302,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     let allItems = [];
     let currentFilter = 'All';
     let currentFormat = 'all';
+    let currentSort = 'updatedDesc';
 
     function openLightbox(url, title) {
       document.getElementById('lightboxImg').src = url;
@@ -370,6 +387,32 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         if (currentFormat === 'series' && (item.episode === 'Movie' || item.episode === 'None')) return false;
         if (query && !item.title.toLowerCase().includes(query)) return false;
         return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (currentSort === 'updatedDesc') {
+          return new Date(b.lastEditedTime).getTime() - new Date(a.lastEditedTime).getTime();
+        }
+        if (currentSort === 'updatedAsc') {
+          return new Date(a.lastEditedTime).getTime() - new Date(b.lastEditedTime).getTime();
+        }
+        if (currentSort === 'titleAsc') {
+          return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+        }
+        if (currentSort === 'titleDesc') {
+          return b.title.localeCompare(a.title, undefined, { sensitivity: 'base' });
+        }
+        if (currentSort === 'episodeDesc') {
+          const numA = parseInt(a.episode, 10) || 0;
+          const numB = parseInt(b.episode, 10) || 0;
+          return numB - numA;
+        }
+        if (currentSort === 'episodeAsc') {
+          const numA = parseInt(a.episode, 10) || 0;
+          const numB = parseInt(b.episode, 10) || 0;
+          return numA - numB;
+        }
+        return 0;
       });
 
       if (filtered.length === 0) {

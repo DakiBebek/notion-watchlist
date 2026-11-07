@@ -8,7 +8,7 @@ import AddItemModal from '@/components/AddItemModal';
 import EditItemModal from '@/components/EditItemModal';
 import ImageLightbox from '@/components/ImageLightbox';
 import { WatchItem, WatchStatus, WatchlistStats } from '@/types/watchlist';
-import { Search, SlidersHorizontal, Film, AlertCircle, RefreshCw } from 'lucide-react';
+import { Search, SlidersHorizontal, Film, AlertCircle, RefreshCw, ArrowUpDown } from 'lucide-react';
 
 export default function HomePage() {
   const [items, setItems] = useState<WatchItem[]>([]);
@@ -16,10 +16,11 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters & Search
+  // Filters, Search & Sorting
   const [activeFilter, setActiveFilter] = useState<WatchStatus | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [formatFilter, setFormatFilter] = useState<'all' | 'movie' | 'series'>('all');
+  const [sortBy, setSortBy] = useState<'updatedDesc' | 'updatedAsc' | 'titleAsc' | 'titleDesc' | 'episodeDesc' | 'episodeAsc'>('updatedDesc');
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -60,9 +61,9 @@ export default function HomePage() {
     };
   }, [items]);
 
-  // Filtered items
+  // Filtered & Sorted items
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    const list = items.filter((item) => {
       // Status filter
       if (activeFilter !== 'All' && item.status !== activeFilter) {
         return false;
@@ -84,7 +85,34 @@ export default function HomePage() {
 
       return true;
     });
-  }, [items, activeFilter, formatFilter, searchQuery]);
+
+    // Sorting conditions
+    return list.sort((a, b) => {
+      if (sortBy === 'updatedDesc') {
+        return new Date(b.lastEditedTime).getTime() - new Date(a.lastEditedTime).getTime();
+      }
+      if (sortBy === 'updatedAsc') {
+        return new Date(a.lastEditedTime).getTime() - new Date(b.lastEditedTime).getTime();
+      }
+      if (sortBy === 'titleAsc') {
+        return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      }
+      if (sortBy === 'titleDesc') {
+        return b.title.localeCompare(a.title, undefined, { sensitivity: 'base' });
+      }
+      if (sortBy === 'episodeDesc') {
+        const numA = parseInt(a.episode, 10) || 0;
+        const numB = parseInt(b.episode, 10) || 0;
+        return numB - numA;
+      }
+      if (sortBy === 'episodeAsc') {
+        const numA = parseInt(a.episode, 10) || 0;
+        const numB = parseInt(b.episode, 10) || 0;
+        return numA - numB;
+      }
+      return 0;
+    });
+  }, [items, activeFilter, formatFilter, searchQuery, sortBy]);
 
   // Update Status Handler (Optimistic)
   const handleUpdateStatus = async (id: string, newStatus: WatchStatus) => {
@@ -242,6 +270,25 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+            {/* Sorting Select */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-300">
+              <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <span className="text-zinc-500 hidden sm:inline">Urutan:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                aria-label="Urutkan watchlist"
+                className="bg-transparent text-xs text-zinc-200 font-medium focus:outline-none cursor-pointer pr-1"
+              >
+                <option value="updatedDesc" className="bg-zinc-900 text-zinc-200">Update Terbaru</option>
+                <option value="updatedAsc" className="bg-zinc-900 text-zinc-200">Update Terlama</option>
+                <option value="titleAsc" className="bg-zinc-900 text-zinc-200">Judul (A → Z)</option>
+                <option value="titleDesc" className="bg-zinc-900 text-zinc-200">Judul (Z → A)</option>
+                <option value="episodeDesc" className="bg-zinc-900 text-zinc-200">Episode (Tertinggi)</option>
+                <option value="episodeAsc" className="bg-zinc-900 text-zinc-200">Episode (Terendah)</option>
+              </select>
+            </div>
+
             <div className="flex items-center p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
               <button
                 onClick={() => setFormatFilter('all')}
