@@ -423,12 +423,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     ${epDisplay}
                   </span>
                 </div>
-                ${isNumEp ? `
+                ${(isNumEp && item.status !== 'Finish') ? `
                   <button onclick="incrementEp('${item.id}', '${item.episode}')" title="Episode Selanjutnya (+1)" class="inline-flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-mono font-bold rounded-md bg-white hover:bg-zinc-200 text-black shadow-sm transition active:scale-90">
                     <svg class="w-3 h-3 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
                     <span>1</span>
                   </button>
-                ` : ''}
+                ` : (item.status === 'Finish' ? `
+                  <span class="text-[10px] font-mono font-medium text-zinc-500 px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800">✓ Tamat</span>
+                ` : '')}
               </div>
 
               <div class="flex items-center justify-between gap-1.5">

@@ -48,6 +48,7 @@ export default function WatchlistCard({
   };
 
   const isNumericEpisode = !isNaN(parseInt(item.episode, 10));
+  const canIncrementEpisode = isNumericEpisode && item.status !== 'Finish';
 
   // Minimalist monochrome status styling
   const getStatusStyle = (status: WatchStatus) => {
@@ -191,7 +192,7 @@ export default function WatchlistCard({
               {item.episode === 'None' ? 'Belum Mulai' : item.episode === 'Movie' ? 'Movie' : `Ep. ${item.episode}`}
             </span>
           </div>
-          {isNumericEpisode && (
+          {canIncrementEpisode ? (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -203,7 +204,11 @@ export default function WatchlistCard({
               <Plus className="w-3 h-3 stroke-[3]" />
               <span>1</span>
             </button>
-          )}
+          ) : item.status === 'Finish' ? (
+            <span className="text-[10px] font-mono font-medium text-zinc-500 px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800">
+              ✓ Tamat
+            </span>
+          ) : null}
         </div>
 
         {/* Status Selector Row */}
