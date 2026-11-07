@@ -260,10 +260,45 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- Fullscreen Lightbox Modal -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md hidden" onclick="closeLightbox()">
+    <div class="absolute top-4 left-4 right-4 flex items-center justify-between z-10 pointer-events-none">
+      <div id="lightboxTitle" class="pointer-events-auto bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 text-xs sm:text-sm font-semibold text-white truncate max-w-[70vw]"></div>
+      <div class="flex items-center gap-2 pointer-events-auto">
+        <a id="lightboxOpenLink" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="p-2.5 rounded-xl bg-black/60 hover:bg-black/90 text-slate-300 hover:text-white border border-white/10 backdrop-blur-md transition" title="Buka di tab baru">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        </a>
+        <button onclick="closeLightbox()" class="p-2.5 rounded-xl bg-black/60 hover:bg-rose-600 text-slate-300 hover:text-white border border-white/10 backdrop-blur-md transition" title="Tutup (Esc)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div class="relative max-w-full max-h-[88vh] flex items-center justify-center" onclick="event.stopPropagation()">
+      <img id="lightboxImg" src="" class="max-h-[85vh] max-w-[92vw] sm:max-w-[85vw] object-contain rounded-2xl shadow-2xl border border-white/10">
+    </div>
+  </div>
+
   <script>
     let allItems = [];
     let currentFilter = 'All';
     let currentFormat = 'all';
+
+    function openLightbox(url, title) {
+      document.getElementById('lightboxImg').src = url;
+      document.getElementById('lightboxTitle').innerText = title;
+      document.getElementById('lightboxOpenLink').href = url;
+      document.getElementById('lightboxModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightboxModal').classList.add('hidden');
+      document.body.style.overflow = 'unset';
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
 
     async function loadWatchlist(spin = false) {
       if (spin) {
@@ -354,7 +389,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="rounded-2xl bg-[#111726]/85 border border-slate-800 hover:border-slate-700 p-4 transition card-glow flex flex-col justify-between">
             <div>
               <div class="relative h-36 rounded-xl bg-slate-900 border border-slate-800/80 mb-3 overflow-hidden flex items-center justify-center">
-                ${cardImg ? `<img src="${cardImg}" class="w-full h-full object-cover">` : `
+                ${cardImg ? `
+                  <div onclick="openLightbox('${cardImg}', '${item.title.replace(/'/g, "\\'")}')" class="relative w-full h-full cursor-zoom-in group/img" title="Klik untuk melihat ukuran penuh">
+                    <img src="${cardImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                      <div class="p-1.5 px-2.5 rounded-xl bg-black/70 backdrop-blur-md text-white text-[11px] font-semibold border border-white/20 flex items-center gap-1 shadow-lg">
+                        🔍 Lihat Full
+                      </div>
+                    </div>
+                  </div>
+                ` : `
                   <div class="w-full h-full bg-gradient-to-br from-blue-900/40 via-indigo-900/20 to-purple-900/40 flex flex-col items-center justify-center p-3 text-center">
                     <div class="w-12 h-12 rounded-xl bg-slate-900/70 border border-slate-700/60 flex items-center justify-center text-xl mb-1 shadow-inner">
                       ${item.icon ? (item.icon.startsWith('http') ? `<img src="${item.icon}" class="w-full h-full object-cover rounded-xl">` : item.icon) : '🎬'}

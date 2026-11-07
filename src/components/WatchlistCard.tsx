@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, Check, Clock, Plus, ExternalLink, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { Play, Check, Clock, Plus, ExternalLink, MoreVertical, Edit2, Trash2, Maximize2 } from 'lucide-react';
 import { WatchItem, WatchStatus } from '@/types/watchlist';
 
 interface WatchlistCardProps {
@@ -10,6 +10,7 @@ interface WatchlistCardProps {
   onIncrementEpisode: (id: string, currentEp: string) => Promise<void>;
   onEdit: (item: WatchItem) => void;
   onDelete: (id: string) => Promise<void>;
+  onImageClick?: (url: string, title: string) => void;
 }
 
 export default function WatchlistCard({
@@ -18,6 +19,7 @@ export default function WatchlistCard({
   onIncrementEpisode,
   onEdit,
   onDelete,
+  onImageClick,
 }: WatchlistCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -101,12 +103,27 @@ export default function WatchlistCard({
         {/* Cover / Header Poster */}
         <div className="relative mb-3.5 h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-800/60 flex items-center justify-center">
           {(!imageError && ((item.icon && item.icon.startsWith('http')) ? item.icon : item.cover)) ? (
-            <img
-              src={(item.icon && item.icon.startsWith('http')) ? item.icon : item.cover!}
-              alt={item.title}
-              onError={() => setImageError(true)}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+            <div
+              onClick={() => {
+                const img = (item.icon && item.icon.startsWith('http')) ? item.icon : item.cover;
+                if (img) onImageClick?.(img, item.title);
+              }}
+              className="relative w-full h-full cursor-zoom-in group/img"
+              title="Klik untuk melihat ukuran penuh"
+            >
+              <img
+                src={(item.icon && item.icon.startsWith('http')) ? item.icon : item.cover!}
+                alt={item.title}
+                onError={() => setImageError(true)}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <div className="p-2 rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/20 shadow-lg transform scale-90 group-hover/img:scale-100 transition-transform flex items-center gap-1.5 text-xs font-semibold">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>Lihat Full</span>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className={`w-full h-full bg-gradient-to-br ${getGradient(item.title)} flex flex-col items-center justify-center p-4 text-center`}>
               {item.icon ? (

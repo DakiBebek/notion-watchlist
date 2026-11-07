@@ -6,6 +6,7 @@ import StatsCards from '@/components/StatsCards';
 import WatchlistCard from '@/components/WatchlistCard';
 import AddItemModal from '@/components/AddItemModal';
 import EditItemModal from '@/components/EditItemModal';
+import ImageLightbox from '@/components/ImageLightbox';
 import { WatchItem, WatchStatus, WatchlistStats } from '@/types/watchlist';
 import { Search, SlidersHorizontal, Film, AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -23,6 +24,7 @@ export default function HomePage() {
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WatchItem | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
 
   // Fetch watchlist from Next.js API
   const fetchWatchlist = async (isManual = false) => {
@@ -303,6 +305,7 @@ export default function HomePage() {
                 onIncrementEpisode={handleIncrementEpisode}
                 onEdit={(it) => setEditingItem(it)}
                 onDelete={handleDeleteItem}
+                onImageClick={(url, title) => setLightboxImage({ url, title })}
               />
             ))}
           </div>
@@ -322,6 +325,14 @@ export default function HomePage() {
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}
         onSave={handleSaveEdit}
+      />
+
+      {/* Image Fullscreen Lightbox Modal */}
+      <ImageLightbox
+        isOpen={!!lightboxImage}
+        imageUrl={lightboxImage?.url || null}
+        title={lightboxImage?.title || ''}
+        onClose={() => setLightboxImage(null)}
       />
     </div>
   );
