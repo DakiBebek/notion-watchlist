@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
+import { isAuthorized } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Akses ditolak: Password diperlukan' },
+      { status: 401 }
+    );
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get('image') as File | null;

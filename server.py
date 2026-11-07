@@ -153,6 +153,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </div>
 
       <div class="flex items-center gap-2">
+        <button onclick="lockSession()" title="Kunci Layar (Keluar)" class="p-2 text-zinc-400 hover:text-white rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </button>
         <button onclick="loadWatchlist(true)" id="refreshBtn" title="Sync ulang dari Notion" class="p-2 text-zinc-400 hover:text-white rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 transition">
           <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
@@ -278,6 +281,44 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </form>
     </div>
   </div>
+  </div>
+
+  <!-- Lock Screen Overlay -->
+  <div id="lockScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#09090b] text-zinc-100">
+    <div class="relative w-full max-w-sm rounded-3xl bg-zinc-950/90 border border-zinc-800 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white mb-4 shadow-inner text-2xl">
+          🔒
+        </div>
+        <h2 class="text-xl font-bold tracking-tight text-white">Akses Terkunci</h2>
+        <p class="text-xs text-zinc-400 mt-1 max-w-[240px] leading-relaxed">
+          Masukkan kata sandi untuk membuka koleksi watchlist Anda.
+        </p>
+      </div>
+
+      <form onsubmit="submitUnlock(event)" class="space-y-4">
+        <div>
+          <input
+            type="password"
+            id="pinInput"
+            autofocus
+            placeholder="Masukkan password..."
+            class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-white text-sm text-white placeholder-zinc-500 focus:outline-none transition tracking-wider font-mono"
+          />
+          <p id="lockError" class="text-xs text-rose-400 mt-1.5 hidden">Password salah! Akses ditolak.</p>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-white hover:bg-zinc-200 text-black transition duration-150 shadow-md flex items-center justify-center gap-2"
+        >
+          <span>Buka Akses</span>
+        </button>
+      </form>
+      <div class="mt-6 pt-5 border-t border-zinc-850/80 text-center">
+        <p class="text-[11px] font-mono text-zinc-500">🔒 Dilindungi sandi keamanan pribadi</p>
+      </div>
+    </div>
   </div>
 
   <!-- Fullscreen Lightbox Modal -->
@@ -601,7 +642,39 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
     }
 
-    loadWatchlist();
+    function checkAuth() {
+      const pin = localStorage.getItem('wl_auth_pin');
+      if (pin === '160208') {
+        document.getElementById('lockScreen').classList.add('hidden');
+        loadWatchlist();
+      } else {
+        document.getElementById('lockScreen').classList.remove('hidden');
+        document.getElementById('loader').classList.add('hidden');
+      }
+    }
+
+    function submitUnlock(e) {
+      e.preventDefault();
+      const val = document.getElementById('pinInput').value.trim();
+      if (val === '160208') {
+        localStorage.setItem('wl_auth_pin', val);
+        document.getElementById('lockError').classList.add('hidden');
+        document.getElementById('lockScreen').classList.add('hidden');
+        loadWatchlist();
+      } else {
+        document.getElementById('lockError').classList.remove('hidden');
+      }
+    }
+
+    function lockSession() {
+      localStorage.removeItem('wl_auth_pin');
+      document.getElementById('lockScreen').classList.remove('hidden');
+      document.getElementById('pinInput').value = '';
+      allItems = [];
+      renderItems();
+    }
+
+    checkAuth();
   </script>
 </body>
 </html>

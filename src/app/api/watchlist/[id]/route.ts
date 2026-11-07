@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { updateWatchItem, deleteWatchItem } from '@/lib/notion';
+import { isAuthorized } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,13 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Akses ditolak: Password diperlukan' },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id } = params;
     const body = await request.json();
@@ -33,6 +41,13 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Akses ditolak: Password diperlukan' },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id } = params;
     await deleteWatchItem(id);

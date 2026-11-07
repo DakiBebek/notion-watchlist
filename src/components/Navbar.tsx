@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Film, Plus, RefreshCw, ExternalLink } from 'lucide-react';
+import { Film, Plus, RefreshCw, ExternalLink, Lock } from 'lucide-react';
 
 interface NavbarProps {
   onAddClick: () => void;
   onRefresh: () => void;
   isRefreshing: boolean;
+  onLock?: () => void;
 }
 
-export default function Navbar({ onAddClick, onRefresh, isRefreshing }: NavbarProps) {
+export default function Navbar({ onAddClick, onRefresh, isRefreshing, onLock }: NavbarProps) {
   return (
     <header className="sticky top-0 z-30 backdrop-blur-xl bg-black/70 border-b border-zinc-800/80 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -32,6 +33,16 @@ export default function Navbar({ onAddClick, onRefresh, isRefreshing }: NavbarPr
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {onLock && (
+            <button
+              onClick={onLock}
+              title="Kunci Layar (Keluar)"
+              className="p-2 text-zinc-400 hover:text-white rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition"
+            >
+              <Lock className="w-4 h-4" />
+            </button>
+          )}
+
           <button
             onClick={onRefresh}
             disabled={isRefreshing}

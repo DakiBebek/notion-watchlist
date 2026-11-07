@@ -7,6 +7,7 @@ import WatchlistCard from '@/components/WatchlistCard';
 import AddItemModal from '@/components/AddItemModal';
 import EditItemModal from '@/components/EditItemModal';
 import ImageLightbox from '@/components/ImageLightbox';
+import LockScreen from '@/components/LockScreen';
 import { WatchItem, WatchStatus, WatchlistStats } from '@/types/watchlist';
 import { Search, SlidersHorizontal, Film, AlertCircle, RefreshCw, ArrowUpDown } from 'lucide-react';
 
@@ -15,6 +16,9 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Authentication Lock state
+  const [isUnlocked, setIsUnlocked] = useState<boolean | null>(null);
 
   // Filters, Search & Sorting
   const [activeFilter, setActiveFilter] = useState<WatchStatus | 'All'>('All');
@@ -27,14 +31,27 @@ export default function HomePage() {
   const [editingItem, setEditingItem] = useState<WatchItem | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
 
+  const getAuthHeaders = () => {
+    const pin = typeof window !== 'undefined' ? localStorage.getItem('wl_auth_pin') || '160208' : '160208';
+    return {
+      'x-watchlist-pin': pin,
+    };
+  };
+
   // Fetch watchlist from Next.js API
   const fetchWatchlist = async (isManual = false) => {
     if (isManual) setIsRefreshing(true);
     setError(null);
     try {
-      const res = await fetch('/api/watchlist');
+      const res = await fetch('/api/watchlist', {
+        headers: getAuthHeaders(),
+      });
       const json = await res.json();
       if (!res.ok || !json.success) {
+        if (res.status === 401) {
+          handleLock();
+          return;
+        }
         throw new Error(json.error || 'Gagal mengambil data dari Notion');
       }
       setItems(json.data || []);
@@ -48,8 +65,31 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetchWatchlist();
+    const savedPin = localStorage.getItem('wl_auth_pin');
+    if (savedPin === '160208') {
+      document.cookie = 'wl_pin=160208; path=/; max-age=31536000; SameSite=Lax';
+      setIsUnlocked(true);
+      fetchWatchlist();
+    } else {
+      setIsUnlocked(false);
+      setLoading(false);
+    }
   }, []);
+
+  const handleUnlock = (enteredPin: string) => {
+    localStorage.setItem('wl_auth_pin', enteredPin);
+    document.cookie = `wl_pin=${enteredPin}; path=/; max-age=31536000; SameSite=Lax`;
+    setIsUnlocked(true);
+    setLoading(true);
+    fetchWatchlist();
+  };
+
+  const handleLock = () => {
+    localStorage.removeItem('wl_auth_pin');
+    document.cookie = 'wl_pin=; path=/; max-age=0; SameSite=Lax';
+    setIsUnlocked(false);
+    setItems([]);
+  };
 
   // Compute stats
   const stats: WatchlistStats = useMemo(() => {
@@ -125,7 +165,7 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/watchlist/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
@@ -151,7 +191,7 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/watchlist/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ episode: nextEp }),
       });
       const data = await res.json();
@@ -173,7 +213,7 @@ export default function HomePage() {
   }) => {
     const res = await fetch('/api/watchlist', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(newItemData),
     });
     const data = await res.json();
@@ -190,7 +230,7 @@ export default function HomePage() {
   ) => {
     const res = await fetch(`/api/watchlist/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data),
     });
     const result = await res.json();
@@ -210,6 +250,7 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/watchlist/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -221,12 +262,27 @@ export default function HomePage() {
     }
   };
 
+  // If auth state is initializing
+  if (isUnlocked === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
+        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // If locked, render LockScreen
+  if (isUnlocked === false) {
+    return <LockScreen onUnlock={handleUnlock} />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#09090b] text-zinc-100">
       <Navbar
         onAddClick={() => setIsAddOpen(true)}
         onRefresh={() => fetchWatchlist(true)}
         isRefreshing={isRefreshing}
+        onLock={handleLock}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">

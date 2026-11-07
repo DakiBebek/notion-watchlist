@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getWatchlist, createWatchItem } from '@/lib/notion';
+import { isAuthorized } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Akses ditolak: Password diperlukan' },
+      { status: 401 }
+    );
+  }
+
   try {
     const items = await getWatchlist();
     return NextResponse.json({ success: true, data: items });
@@ -17,6 +25,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, error: 'Akses ditolak: Password diperlukan' },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { title, status, episode, coverUrl } = body;
