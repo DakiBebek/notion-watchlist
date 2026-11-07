@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, Check, Clock, Plus, ExternalLink, MoreVertical, Edit2, Trash2, Maximize2 } from 'lucide-react';
+import { Plus, ExternalLink, MoreVertical, Edit2, Trash2, Maximize2 } from 'lucide-react';
 import { WatchItem, WatchStatus } from '@/types/watchlist';
 
 interface WatchlistCardProps {
@@ -25,35 +25,7 @@ export default function WatchlistCard({
   const [showMenu, setShowMenu] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const getStatusBadge = (status: WatchStatus) => {
-    switch (status) {
-      case 'On Going':
-        return {
-          bg: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-          dot: 'bg-blue-400',
-          label: 'On Going',
-          icon: Play,
-        };
-      case 'Finish':
-        return {
-          bg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-          dot: 'bg-emerald-400',
-          label: 'Finish',
-          icon: Check,
-        };
-      case 'Watchlist':
-      default:
-        return {
-          bg: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-          dot: 'bg-amber-400',
-          label: 'Watchlist',
-          icon: Clock,
-        };
-    }
-  };
-
-  const statusConfig = getStatusBadge(item.status);
-  const StatusIcon = statusConfig.icon;
+  const cardImage = (!imageError && ((item.icon && item.icon.startsWith('http')) ? item.icon : item.cover)) || null;
 
   const handleStatusChange = async (newStatus: WatchStatus) => {
     if (newStatus === item.status || isUpdating) return;
@@ -77,57 +49,51 @@ export default function WatchlistCard({
 
   const isNumericEpisode = !isNaN(parseInt(item.episode, 10));
 
-  // Visual Gradient based on title string hash
-  const getGradient = (str: string) => {
-    const gradients = [
-      'from-blue-600/30 via-indigo-600/20 to-purple-600/30',
-      'from-emerald-600/30 via-teal-600/20 to-cyan-600/30',
-      'from-rose-600/30 via-pink-600/20 to-purple-600/30',
-      'from-amber-600/30 via-orange-600/20 to-red-600/30',
-      'from-violet-600/30 via-purple-600/20 to-indigo-600/30',
-    ];
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  // Minimalist monochrome status styling
+  const getStatusStyle = (status: WatchStatus) => {
+    switch (status) {
+      case 'On Going':
+        return 'border-zinc-700 text-white bg-zinc-900';
+      case 'Finish':
+        return 'border-zinc-800 text-zinc-400 bg-zinc-950/60';
+      case 'Watchlist':
+      default:
+        return 'border-zinc-800 text-zinc-300 bg-zinc-900/60';
     }
-    return gradients[Math.abs(hash) % gradients.length];
   };
 
   return (
     <div
-      className={`group relative rounded-2xl bg-[#111726]/80 backdrop-blur-sm border border-slate-800/80 hover:border-slate-700 p-4 transition-all duration-200 flex flex-col justify-between glow-on-hover ${
-        isUpdating ? 'opacity-70 pointer-events-none' : ''
+      className={`group relative rounded-2xl bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700 p-3.5 transition-all duration-200 flex flex-col justify-between minimal-card ${
+        isUpdating ? 'opacity-50 pointer-events-none' : ''
       }`}
     >
       <div>
         {/* Cover / Header Poster */}
-        <div className="relative mb-3.5 h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-800/60 flex items-center justify-center">
-          {(!imageError && ((item.icon && item.icon.startsWith('http')) ? item.icon : item.cover)) ? (
+        <div className="relative mb-3 h-40 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800/70 flex items-center justify-center">
+          {cardImage ? (
             <div
-              onClick={() => {
-                const img = (item.icon && item.icon.startsWith('http')) ? item.icon : item.cover;
-                if (img) onImageClick?.(img, item.title);
-              }}
+              onClick={() => onImageClick?.(cardImage, item.title)}
               className="relative w-full h-full cursor-zoom-in group/img"
               title="Klik untuk melihat ukuran penuh"
             >
               <img
-                src={(item.icon && item.icon.startsWith('http')) ? item.icon : item.cover!}
+                src={cardImage}
                 alt={item.title}
                 onError={() => setImageError(true)}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                <div className="p-2 rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/20 shadow-lg transform scale-90 group-hover/img:scale-100 transition-transform flex items-center gap-1.5 text-xs font-semibold">
+                <div className="p-1.5 px-3 rounded-lg bg-black/80 backdrop-blur-md text-white border border-white/20 shadow-lg transform scale-95 group-hover/img:scale-100 transition-transform flex items-center gap-1.5 text-xs font-medium">
                   <Maximize2 className="w-3.5 h-3.5" />
                   <span>Lihat Full</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className={`w-full h-full bg-gradient-to-br ${getGradient(item.title)} flex flex-col items-center justify-center p-4 text-center`}>
+            <div className="w-full h-full bg-gradient-to-br from-zinc-900 via-zinc-900/80 to-zinc-950 flex flex-col items-center justify-center p-4 text-center">
               {item.icon ? (
-                <div className="w-12 h-12 rounded-xl bg-slate-900/60 backdrop-blur-sm border border-slate-700/60 flex items-center justify-center text-2xl shadow-inner mb-2 overflow-hidden">
+                <div className="w-11 h-11 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-xl shadow-inner mb-2 overflow-hidden">
                   {item.icon.startsWith('http') ? (
                     <img src={item.icon} alt="icon" className="w-full h-full object-cover" />
                   ) : (
@@ -135,11 +101,11 @@ export default function WatchlistCard({
                   )}
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-slate-900/60 backdrop-blur-sm border border-slate-700/60 flex items-center justify-center text-lg font-bold text-slate-300 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-850 flex items-center justify-center text-xs font-mono font-bold text-zinc-300 mb-2">
                   {item.title.substring(0, 2).toUpperCase()}
                 </div>
               )}
-              <span className="text-xs font-semibold text-slate-300/80 line-clamp-1">
+              <span className="text-[11px] font-mono text-zinc-500 truncate max-w-[90%]">
                 {item.title}
               </span>
             </div>
@@ -147,7 +113,7 @@ export default function WatchlistCard({
 
           {/* Episode Badge Floating on Card */}
           <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
-            <span className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-black/75 backdrop-blur-md text-slate-200 border border-white/10 shadow-sm">
+            <span className="px-2.5 py-0.5 text-xs font-mono font-medium rounded-lg bg-black/85 backdrop-blur-md text-zinc-200 border border-white/10 shadow-sm">
               {item.episode === 'None' ? 'Belum Mulai' : item.episode === 'Movie' ? 'Movie' : `Ep. ${item.episode}`}
             </span>
             {isNumericEpisode && (
@@ -157,9 +123,9 @@ export default function WatchlistCard({
                   handleNextEpisode();
                 }}
                 title="Tonton episode selanjutnya (+1)"
-                className="p-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white backdrop-blur-md shadow-md transition transform active:scale-90"
+                className="p-1 rounded-md bg-white hover:bg-zinc-200 text-black shadow transition active:scale-90 font-bold"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             )}
           </div>
@@ -168,7 +134,7 @@ export default function WatchlistCard({
           <div className="absolute top-2 right-2">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-slate-300 hover:text-white backdrop-blur-md border border-white/10 transition"
+              className="p-1.5 rounded-lg bg-black/70 hover:bg-black/90 text-zinc-300 hover:text-white backdrop-blur-md border border-white/10 transition"
             >
               <MoreVertical className="w-3.5 h-3.5" />
             </button>
@@ -179,15 +145,15 @@ export default function WatchlistCard({
                   className="fixed inset-0 z-10"
                   onClick={() => setShowMenu(false)}
                 />
-                <div className="absolute right-0 mt-1 w-36 rounded-xl bg-slate-900 border border-slate-700/80 shadow-xl py-1 z-20 text-xs">
+                <div className="absolute right-0 mt-1 w-36 rounded-xl bg-zinc-950 border border-zinc-800 shadow-2xl py-1 z-20 text-xs text-zinc-300">
                   <a
                     href={item.notionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:bg-slate-800"
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-900 hover:text-white transition"
                     onClick={() => setShowMenu(false)}
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
                     Buka di Notion
                   </a>
                   <button
@@ -195,9 +161,9 @@ export default function WatchlistCard({
                       setShowMenu(false);
                       onEdit(item);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-slate-300 hover:bg-slate-800 text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-zinc-900 hover:text-white text-left transition"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Edit2 className="w-3.5 h-3.5 text-zinc-400" />
                     Edit Tontonan
                   </button>
                   <button
@@ -207,10 +173,10 @@ export default function WatchlistCard({
                         onDelete(item.id);
                       }
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:bg-rose-500/10 text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:bg-rose-500/10 text-left transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    Arsipkan / Hapus
+                    Hapus / Arsipkan
                   </button>
                 </div>
               </>
@@ -219,23 +185,23 @@ export default function WatchlistCard({
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-sm sm:text-base text-white tracking-tight line-clamp-2 mb-2 leading-snug" title={item.title}>
+        <h3 className="font-medium text-sm sm:text-base text-white tracking-tight line-clamp-2 leading-snug" title={item.title}>
           {item.title}
         </h3>
       </div>
 
       {/* Footer / Status Switcher */}
-      <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+      <div className="mt-3 pt-3 border-t border-zinc-800/70 flex items-center justify-between gap-2">
         <div className="relative flex-1">
           <select
             value={item.status}
             onChange={(e) => handleStatusChange(e.target.value as WatchStatus)}
             disabled={isUpdating}
-            className={`w-full text-xs font-semibold py-1.5 px-2.5 rounded-lg border appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 transition ${statusConfig.bg}`}
+            className={`w-full text-xs font-mono font-medium py-1.5 px-2.5 rounded-lg border appearance-none cursor-pointer focus:outline-none focus:border-zinc-500 transition ${getStatusStyle(item.status)}`}
           >
-            <option value="On Going" className="bg-slate-900 text-slate-200">▶ On Going</option>
-            <option value="Watchlist" className="bg-slate-900 text-slate-200">⏱ Watchlist</option>
-            <option value="Finish" className="bg-slate-900 text-slate-200">✓ Finish</option>
+            <option value="On Going" className="bg-zinc-950 text-white">▶ On Going</option>
+            <option value="Watchlist" className="bg-zinc-950 text-zinc-300">⏱ Watchlist</option>
+            <option value="Finish" className="bg-zinc-950 text-zinc-400">✓ Finish</option>
           </select>
         </div>
 
@@ -244,7 +210,7 @@ export default function WatchlistCard({
           target="_blank"
           rel="noopener noreferrer"
           title="Buka di Notion"
-          className="p-1.5 text-slate-500 hover:text-slate-300 rounded-lg hover:bg-slate-800 transition"
+          className="p-1.5 text-zinc-500 hover:text-zinc-200 rounded-lg hover:bg-zinc-900 transition"
         >
           <ExternalLink className="w-3.5 h-3.5" />
         </a>

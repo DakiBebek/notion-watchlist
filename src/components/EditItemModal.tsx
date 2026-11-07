@@ -135,35 +135,35 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-md rounded-2xl bg-[#111726] border border-slate-700/80 shadow-2xl p-6 text-white animate-in fade-in zoom-in-95 duration-200 my-8">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-md rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl p-6 text-zinc-100 animate-in fade-in zoom-in-95 duration-200 my-8">
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-850">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400">
-              <Edit2 className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center">
+              <Edit2 className="w-4 h-4 stroke-[2]" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Edit Tontonan</h2>
-              <p className="text-xs text-slate-400">Perubahan langsung tersimpan ke Notion</p>
+              <h2 className="text-base font-semibold text-white">Edit Tontonan</h2>
+              <p className="text-[11px] font-mono text-zinc-500">Notion Database</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-900 transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400">
+          <div className="mt-4 p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1.5">
               Judul
             </label>
             <input
@@ -171,47 +171,47 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-white"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-white focus:outline-none text-sm text-white transition"
             />
           </div>
 
-          {/* Poster / Cover Section */}
+          {/* Poster Section */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
-                Poster / Cover Gambar
+              <label className="text-xs font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-zinc-400" />
+                Poster / Icon Gambar
               </label>
-              <div className="flex text-[11px] gap-2 text-slate-400 bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-800">
+              <div className="flex text-[11px] gap-2 text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-lg border border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setUploadMode('url')}
-                  className={`hover:text-white transition ${uploadMode === 'url' ? 'text-blue-400 font-bold' : ''}`}
+                  className={`hover:text-white transition ${uploadMode === 'url' ? 'text-white font-semibold' : 'text-zinc-500'}`}
                 >
-                  🔗 Link URL
+                  Link URL
                 </button>
                 <span>|</span>
                 <button
                   type="button"
                   onClick={() => setUploadMode('file')}
-                  className={`hover:text-white transition ${uploadMode === 'file' ? 'text-blue-400 font-bold' : ''}`}
+                  className={`hover:text-white transition ${uploadMode === 'file' ? 'text-white font-semibold' : 'text-zinc-500'}`}
                 >
-                  📁 Upload File
+                  Upload File
                 </button>
               </div>
             </div>
 
             {(imagePreview || coverUrl) ? (
-              <div className="relative h-40 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 flex items-center justify-center group mb-2">
+              <div className="relative h-40 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 flex items-center justify-center group mb-2">
                 <img
                   src={imagePreview || coverUrl}
                   alt="Poster Preview"
                   className="w-full h-full object-cover"
                 />
                 {isUploading && (
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-xs text-white">
-                    <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-                    <span>Mengunggah poster...</span>
+                  <div className="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-xs text-white">
+                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                    <span className="font-mono text-xs">Mengunggah...</span>
                   </div>
                 )}
                 {!isUploading && (
@@ -219,7 +219,7 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                     type="button"
                     onClick={handleRemoveImage}
                     title="Hapus gambar"
-                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 hover:bg-rose-600 text-white transition"
+                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/80 hover:bg-zinc-800 text-white transition border border-white/10"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -230,22 +230,22 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
             {uploadMode === 'url' ? (
               <div>
                 <div className="relative">
-                  <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type="url"
-                    placeholder="Tempel link gambar (contoh: https://images.../poster.jpg)"
+                    placeholder="Tempel URL gambar (https://...)"
                     value={coverUrl}
                     onChange={(e) => {
                       const val = e.target.value.trim();
                       setCoverUrl(val);
                       setImagePreview(val || null);
                     }}
-                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white transition"
                   />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
-                  <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <span>Tips: Klik kanan gambar di Google / MAL &rarr; <b>Salin alamat gambar</b> &rarr; tempel di sini.</span>
+                <p className="text-[11px] text-zinc-500 mt-1.5 flex items-center gap-1">
+                  <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <span>Di Google / Pinterest, klik kanan poster &rarr; Salin alamat gambar &rarr; tempel.</span>
                 </p>
               </div>
             ) : (
@@ -260,20 +260,20 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-5 px-4 rounded-xl border border-dashed border-slate-700 hover:border-blue-500/80 bg-slate-900/50 hover:bg-slate-900/80 transition flex flex-col items-center justify-center gap-1.5 cursor-pointer group"
+                  className="w-full py-5 px-4 rounded-xl border border-dashed border-zinc-800 hover:border-zinc-600 bg-zinc-900/50 hover:bg-zinc-900 transition flex flex-col items-center justify-center gap-1.5 cursor-pointer group"
                 >
-                  <div className="p-2 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 text-blue-400 transition">
-                    <Upload className="w-5 h-5" />
+                  <div className="p-2 rounded-xl bg-zinc-850 group-hover:bg-zinc-800 text-zinc-300 transition">
+                    <Upload className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-medium text-slate-300">Pilih foto dari Galeri HP / Laptop</span>
-                  <span className="text-[10px] text-slate-500">JPG, PNG, WEBP</span>
+                  <span className="text-xs font-medium text-zinc-300">Pilih dari Galeri HP / Laptop</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">JPG, PNG, WEBP</span>
                 </button>
 
-                <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+                <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-400">
                   <button
                     type="button"
                     onClick={() => setShowKeyInput(!showKeyInput)}
-                    className="hover:text-blue-400 flex items-center gap-1 text-slate-400 underline"
+                    className="hover:text-white flex items-center gap-1 text-zinc-400 underline"
                   >
                     <Key className="w-3 h-3" />
                     {imgbbKey ? 'Ganti ImgBB API Key' : 'Atur ImgBB API Key (Gratis)'}
@@ -282,24 +282,24 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                 </div>
 
                 {showKeyInput && (
-                  <div className="mt-2 p-3 rounded-xl bg-slate-900/90 border border-slate-700 text-xs space-y-1.5">
+                  <div className="mt-2 p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-300">ImgBB API Key:</span>
+                      <span className="font-medium text-zinc-300">ImgBB API Key:</span>
                       <a
                         href="https://api.imgbb.com"
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-400 hover:underline text-[10px]"
+                        className="text-zinc-400 hover:text-white underline text-[10px]"
                       >
-                        Dapatkan Key Gratis &rarr;
+                        Dapatkan Key &rarr;
                       </a>
                     </div>
                     <input
                       type="text"
-                      placeholder="Paste 32-character key di sini..."
+                      placeholder="Paste key di sini..."
                       value={imgbbKey}
                       onChange={(e) => handleSaveKey(e.target.value)}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-blue-500"
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-white font-mono"
                     />
                   </div>
                 )}
@@ -308,7 +308,7 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1.5">
               Status
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -317,10 +317,10 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                   type="button"
                   key={st}
                   onClick={() => setStatus(st)}
-                  className={`py-2 px-3 text-xs font-semibold rounded-xl border transition ${
+                  className={`py-2 px-3 text-xs font-medium rounded-xl border transition ${
                     status === st
-                      ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-sm'
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'bg-white text-black font-semibold shadow-sm border-white'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
                   }`}
                 >
                   {st}
@@ -330,7 +330,7 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1.5">
               Episode / Format
             </label>
             <div className="flex gap-2">
@@ -340,7 +340,7 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                   if (e.target.value === 'custom') setEpisode('1');
                   else setEpisode(e.target.value);
                 }}
-                className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none"
+                className="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-white font-mono"
               >
                 <option value="None">None</option>
                 <option value="Movie">Movie</option>
@@ -349,35 +349,35 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
 
               {!['None', 'Movie'].includes(episode) && (
                 <div className="flex-1 flex items-center gap-2">
-                  <span className="text-xs text-slate-400">Ep:</span>
+                  <span className="text-xs text-zinc-400">Ep:</span>
                   <input
                     type="number"
                     min="1"
                     max="999"
                     value={episode}
                     onChange={(e) => setEpisode(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:border-white font-mono"
                   />
                 </div>
               )}
             </div>
           </div>
 
-          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-800">
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-zinc-850">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting || isUploading}
-              className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-xl hover:bg-slate-800 transition"
+              className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white rounded-xl transition"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSubmitting || isUploading}
-              className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-lg shadow-blue-600/20 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-black bg-white hover:bg-zinc-200 rounded-xl transition shadow-sm disabled:opacity-50"
             >
-              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <Check className="w-4 h-4 stroke-[2.5]" />}
               <span>{isSubmitting ? 'Menyimpan...' : 'Perbarui'}</span>
             </button>
           </div>

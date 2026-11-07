@@ -108,11 +108,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
           },
           colors: {
-            brand: {
-              50: '#eef2ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-            }
+            background: "#09090b",
+            surface: "#121215",
           }
         }
       }
@@ -120,41 +117,47 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </script>
   <style>
     body {
-      background: radial-gradient(circle at 50% 0%, #151d30 0%, #090d16 65%);
+      background: #09090b;
       min-height: 100vh;
+      color: #ededed;
+      letter-spacing: -0.01em;
     }
-    .card-glow:hover {
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15);
+    .card-hover {
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
       transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
     }
   </style>
 </head>
-<body class="text-slate-100 antialiased font-sans flex flex-col min-h-screen">
+<body class="text-zinc-100 antialiased font-sans flex flex-col min-h-screen">
   <!-- Navbar -->
-  <header class="sticky top-0 z-30 backdrop-blur-md bg-[#090d16]/85 border-b border-slate-800">
+  <header class="sticky top-0 z-30 backdrop-blur-xl bg-black/70 border-b border-zinc-800/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-xl shadow-lg shadow-blue-500/25">
+        <div class="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center font-bold text-sm shadow-sm">
           🎬
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-bold text-base sm:text-lg text-white">Watchlist Tracker</h1>
-            <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+            <h1 class="font-semibold text-base sm:text-lg text-white tracking-tight">Watchlist</h1>
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-300 border border-zinc-800 flex items-center gap-1.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               Notion Live
             </span>
           </div>
-          <p class="text-xs text-slate-400">Database: Film</p>
+          <p class="text-[11px] font-mono text-zinc-500">Film Database</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="loadWatchlist(true)" id="refreshBtn" title="Sync ulang dari Notion" class="p-2.5 text-slate-400 hover:text-white rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition">
+      <div class="flex items-center gap-2">
+        <button onclick="loadWatchlist(true)" id="refreshBtn" title="Sync ulang dari Notion" class="p-2 text-zinc-400 hover:text-white rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 transition">
           <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
-        <button onclick="openAddModal()" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/25 transition transform active:scale-95">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <button onclick="openAddModal()" class="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black bg-white hover:bg-zinc-200 rounded-xl transition shadow-sm transform active:scale-95">
+          <svg class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
           Tambah
         </button>
       </div>
@@ -164,100 +167,101 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
-      <button onclick="setFilter('All')" id="stat-All" class="text-left p-4 rounded-2xl bg-slate-900/60 border border-slate-800 transition hover:border-slate-700">
-        <div class="text-xs font-medium text-slate-400">Semua Tontonan</div>
-        <div class="mt-2 text-2xl font-bold text-white" id="count-all">0</div>
+      <button onclick="setFilter('All')" id="stat-All" class="text-left p-4 rounded-2xl bg-zinc-900 border border-white text-white shadow-md ring-1 ring-white/20">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-zinc-200 font-semibold">Semua Tontonan</div>
+        <div class="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono" id="count-all">0</div>
       </button>
-      <button onclick="setFilter('On Going')" id="stat-On Going" class="text-left p-4 rounded-2xl bg-slate-900/60 border border-slate-800 transition hover:border-slate-700">
-        <div class="text-xs font-medium text-sky-400">Sedang Ditonton</div>
-        <div class="mt-2 text-2xl font-bold text-sky-400" id="count-ongoing">0</div>
+      <button onclick="setFilter('On Going')" id="stat-On Going" class="text-left p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 hover:border-zinc-700 text-zinc-300">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-zinc-400">Sedang Ditonton</div>
+        <div class="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono" id="count-ongoing">0</div>
       </button>
-      <button onclick="setFilter('Watchlist')" id="stat-Watchlist" class="text-left p-4 rounded-2xl bg-slate-900/60 border border-slate-800 transition hover:border-slate-700">
-        <div class="text-xs font-medium text-amber-400">Rencana Nonton</div>
-        <div class="mt-2 text-2xl font-bold text-amber-400" id="count-watchlist">0</div>
+      <button onclick="setFilter('Watchlist')" id="stat-Watchlist" class="text-left p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 hover:border-zinc-700 text-zinc-300">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-zinc-400">Rencana Nonton</div>
+        <div class="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono" id="count-watchlist">0</div>
       </button>
-      <button onclick="setFilter('Finish')" id="stat-Finish" class="text-left p-4 rounded-2xl bg-slate-900/60 border border-slate-800 transition hover:border-slate-700">
-        <div class="text-xs font-medium text-emerald-400">Selesai</div>
-        <div class="mt-2 text-2xl font-bold text-emerald-400" id="count-finish">0</div>
+      <button onclick="setFilter('Finish')" id="stat-Finish" class="text-left p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 hover:border-zinc-700 text-zinc-300">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-zinc-400">Telah Selesai</div>
+        <div class="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono" id="count-finish">0</div>
       </button>
     </div>
 
     <!-- Search & Filter Controls -->
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
       <div class="relative flex-1 max-w-md">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        <input type="text" id="searchInput" oninput="renderItems()" placeholder="Cari anime, film, series..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <input type="text" id="searchInput" oninput="renderItems()" placeholder="Cari anime, film, series..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition">
       </div>
-      <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs self-start">
-        <button onclick="setFormat('all')" id="fmt-all" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-medium">Semua Format</button>
-        <button onclick="setFormat('series')" id="fmt-series" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium">Series</button>
-        <button onclick="setFormat('movie')" id="fmt-movie" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium">Movie</button>
+      <div class="flex items-center gap-1 p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs self-start">
+        <button onclick="setFormat('all')" id="fmt-all" class="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold shadow-sm">Semua Format</button>
+        <button onclick="setFormat('series')" id="fmt-series" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Series</button>
+        <button onclick="setFormat('movie')" id="fmt-movie" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Movie</button>
       </div>
     </div>
 
     <!-- Watchlist Grid -->
-    <div id="loader" class="py-20 flex flex-col items-center justify-center text-slate-500">
-      <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-      <p class="text-sm">Menghubungkan & mengambil data dari Notion...</p>
+    <div id="loader" class="py-24 flex flex-col items-center justify-center text-zinc-500">
+      <div class="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
+      <p class="text-xs font-mono uppercase tracking-wider text-zinc-400">Sinkronisasi Notion...</p>
     </div>
 
     <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
 
-    <div id="emptyState" class="hidden py-16 text-center rounded-2xl border border-dashed border-slate-800 p-8">
-      <div class="text-3xl mb-2">🎞</div>
-      <h3 class="font-semibold text-slate-300">Tidak ada tontonan</h3>
-      <p class="text-xs text-slate-500 mt-1">Gunakan tombol "Tambah" di atas untuk menambahkan tontonan baru.</p>
+    <div id="emptyState" class="hidden py-20 text-center rounded-2xl border border-dashed border-zinc-800 p-8">
+      <div class="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-zinc-400 mb-3 text-xl">🎞</div>
+      <h3 class="font-semibold text-white">Tidak ada tontonan ditemukan</h3>
+      <p class="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">Gunakan tombol "Tambah" di atas untuk menambahkan tontonan baru.</p>
     </div>
   </main>
 
   <!-- Add Modal -->
-  <div id="addModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
-    <div class="w-full max-w-md rounded-2xl bg-[#111726] border border-slate-700/80 p-6 text-white shadow-2xl">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h2 class="text-base font-bold text-white flex items-center gap-2">🎬 Tambah Tontonan Baru</h2>
-        <button onclick="closeAddModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+  <div id="addModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+    <div class="w-full max-w-md rounded-2xl bg-zinc-950 border border-zinc-800 p-6 text-zinc-100 shadow-2xl">
+      <div class="flex items-center justify-between pb-3.5 border-b border-zinc-850">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2">Tambah Tontonan</h2>
+        <button onclick="closeAddModal()" class="p-1 text-zinc-400 hover:text-white text-lg">&times;</button>
       </div>
       <form onsubmit="submitNewItem(event)" class="mt-4 space-y-4">
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Judul Tontonan *</label>
-          <input type="text" id="newTitle" required placeholder="Contoh: Frieren S2..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500">
+          <label class="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1.5">Judul Tontonan *</label>
+          <input type="text" id="newTitle" required placeholder="Contoh: Frieren S2..." class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:border-white transition">
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Poster / Cover Gambar (Opsional)</label>
+          <label class="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1.5">Poster / Cover Gambar (Opsional)</label>
           <div class="flex gap-2">
-            <input type="url" id="newCover" placeholder="Tempel URL gambar (https://...)" class="flex-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-blue-500">
+            <input type="url" id="newCover" placeholder="Tempel URL gambar (https://...)" class="flex-1 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-white">
             <input type="file" id="newFileInput" accept="image/*" class="hidden" onchange="handleLocalUpload(this)">
-            <button type="button" onclick="document.getElementById('newFileInput').click()" class="px-3 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-slate-200">
+            <button type="button" onclick="document.getElementById('newFileInput').click()" class="px-3 py-2 text-xs font-medium bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 rounded-xl text-zinc-300">
               📁 Upload
             </button>
           </div>
-          <p id="uploadStatus" class="text-[10px] text-slate-400 mt-1"></p>
+          <p id="uploadStatus" class="text-[10px] text-zinc-500 mt-1"></p>
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Status</label>
-          <select id="newStatus" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none">
+          <label class="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1.5">Status</label>
+          <select id="newStatus" class="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono text-white focus:outline-none">
             <option value="Watchlist">⏱ Watchlist (Rencana)</option>
             <option value="On Going">▶ On Going (Sedang Nonton)</option>
             <option value="Finish">✓ Finish (Selesai)</option>
           </select>
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Format / Episode</label>
+          <label class="block text-xs font-mono uppercase tracking-wider text-zinc-400 mb-1.5">Format / Episode</label>
           <div class="flex gap-2">
-            <select id="newFormat" onchange="toggleEpInput()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none">
+            <select id="newFormat" onchange="toggleEpInput()" class="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono text-white focus:outline-none">
               <option value="None">None</option>
               <option value="Movie">Movie</option>
               <option value="Series">Nomor Episode</option>
             </select>
-            <input type="number" id="newEpNum" min="1" max="999" value="1" class="hidden flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none" placeholder="Episode #">
+            <input type="number" id="newEpNum" min="1" max="999" value="1" class="hidden flex-1 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none font-mono" placeholder="Episode #">
           </div>
         </div>
-        <div class="pt-3 flex justify-end gap-3 border-t border-slate-800">
-          <button type="button" onclick="closeAddModal()" class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-xl">Batal</button>
-          <button type="submit" id="saveBtn" class="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-md">Simpan ke Notion</button>
+        <div class="pt-3 flex justify-end gap-2.5 border-t border-zinc-850">
+          <button type="button" onclick="closeAddModal()" class="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white rounded-xl">Batal</button>
+          <button type="submit" id="saveBtn" class="px-5 py-2 text-xs font-semibold text-black bg-white hover:bg-zinc-200 rounded-xl shadow-sm">Simpan ke Notion</button>
         </div>
       </form>
     </div>
+  </div>
   </div>
 
   <!-- Fullscreen Lightbox Modal -->

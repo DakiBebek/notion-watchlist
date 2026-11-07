@@ -194,7 +194,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090d16] text-slate-100">
+    <div className="min-h-screen flex flex-col bg-[#09090b] text-zinc-100">
       <Navbar
         onAddClick={() => setIsAddOpen(true)}
         onRefresh={() => fetchWatchlist(true)}
@@ -204,17 +204,17 @@ export default function HomePage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Error banner if any */}
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between">
+          <div className="mb-6 p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-rose-400" />
+              <AlertCircle className="w-5 h-5 text-zinc-400" />
               <div>
-                <p className="text-sm font-semibold text-rose-300">Gagal tersambung ke Notion</p>
-                <p className="text-xs text-rose-400/80">{error}</p>
+                <p className="text-sm font-semibold text-white">Gagal tersambung ke Notion</p>
+                <p className="text-xs text-zinc-500">{error}</p>
               </div>
             </div>
             <button
               onClick={() => fetchWatchlist(true)}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition"
+              className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition"
             >
               Coba Lagi
             </button>
@@ -231,44 +231,44 @@ export default function HomePage() {
         {/* Search & Filters Controls */}
         <div className="my-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input
               type="text"
               placeholder="Cari judul anime, film, series..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition"
             />
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-            <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+            <div className="flex items-center p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
               <button
                 onClick={() => setFormatFilter('all')}
-                className={`px-3 py-1.5 rounded-lg transition font-medium ${
+                className={`px-3.5 py-1.5 rounded-lg transition font-medium ${
                   formatFilter === 'all'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-black shadow-sm font-semibold'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 Semua Format
               </button>
               <button
                 onClick={() => setFormatFilter('series')}
-                className={`px-3 py-1.5 rounded-lg transition font-medium ${
+                className={`px-3.5 py-1.5 rounded-lg transition font-medium ${
                   formatFilter === 'series'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-black shadow-sm font-semibold'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 Series
               </button>
               <button
                 onClick={() => setFormatFilter('movie')}
-                className={`px-3 py-1.5 rounded-lg transition font-medium ${
+                className={`px-3.5 py-1.5 rounded-lg transition font-medium ${
                   formatFilter === 'movie'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-white text-black shadow-sm font-semibold'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 Movie
@@ -279,17 +279,17 @@ export default function HomePage() {
 
         {/* Content Grid */}
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin text-blue-500 mb-3" />
-            <p className="text-sm font-medium">Sinkronisasi data dari Notion...</p>
+          <div className="py-24 flex flex-col items-center justify-center text-zinc-500">
+            <RefreshCw className="w-7 h-7 animate-spin text-white mb-3" />
+            <p className="text-xs font-mono uppercase tracking-wider text-zinc-400">Menghubungkan ke Notion...</p>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="py-20 text-center rounded-2xl border border-dashed border-slate-800 p-8">
-            <div className="w-12 h-12 rounded-2xl bg-slate-800/60 mx-auto flex items-center justify-center text-slate-500 mb-3">
-              <Film className="w-6 h-6" />
+          <div className="py-20 text-center rounded-2xl border border-dashed border-zinc-800 p-8">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-zinc-400 mb-3">
+              <Film className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-slate-300">Tidak ada tontonan ditemukan</h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            <h3 className="text-base font-semibold text-white">Tidak ada tontonan ditemukan</h3>
+            <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
               {searchQuery
                 ? `Tidak ada hasil untuk pencarian "${searchQuery}". Coba kata kunci lain.`
                 : 'Belum ada tontonan di kategori ini. Klik "Tambah" untuk menambahkan tontonan baru ke Notion.'}

@@ -41,7 +41,7 @@ export default function ImageLightbox({
       <div
         className="absolute top-4 left-4 right-4 flex items-center justify-between z-10 pointer-events-none"
       >
-        <div className="pointer-events-auto bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/10 text-xs sm:text-sm font-semibold text-white truncate max-w-[70vw]">
+        <div className="pointer-events-auto bg-zinc-950/80 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-zinc-800 text-xs sm:text-sm font-medium text-white truncate max-w-[70vw]">
           {title}
         </div>
 
@@ -52,7 +52,7 @@ export default function ImageLightbox({
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
             title="Buka gambar asli di tab baru"
-            className="p-2.5 rounded-xl bg-black/60 hover:bg-black/90 text-slate-300 hover:text-white border border-white/10 backdrop-blur-md transition"
+            className="p-2.5 rounded-xl bg-zinc-950/80 hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 backdrop-blur-md transition"
           >
             <ExternalLink className="w-4 h-4" />
           </a>
@@ -60,7 +60,7 @@ export default function ImageLightbox({
           <button
             onClick={onClose}
             title="Tutup (Esc)"
-            className="p-2.5 rounded-xl bg-black/60 hover:bg-rose-600 text-slate-300 hover:text-white border border-white/10 backdrop-blur-md transition"
+            className="p-2.5 rounded-xl bg-zinc-950/80 hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 backdrop-blur-md transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -75,7 +75,7 @@ export default function ImageLightbox({
         <img
           src={imageUrl}
           alt={title}
-          className="max-h-[85vh] max-w-[92vw] sm:max-w-[85vw] object-contain rounded-2xl shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200"
+          className="max-h-[85vh] max-w-[92vw] sm:max-w-[85vw] object-contain rounded-2xl shadow-2xl border border-zinc-800 animate-in zoom-in-95 duration-200"
         />
       </div>
     </div>

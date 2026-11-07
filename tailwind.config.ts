@@ -10,16 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#090d16",
-        surface: "#111726",
-        "surface-card": "#161f33",
-        "surface-border": "#212e4a",
-        accent: {
-          blue: "#3b82f6",
-          purple: "#8b5cf6",
-          green: "#10b981",
-          amber: "#f59e0b",
-        },
+        background: "#09090b",
+        surface: "#121215",
+        "surface-card": "#18181b",
+        "surface-border": "#27272a",
       },
     },
   },
