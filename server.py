@@ -411,33 +411,43 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <span class="text-[11px] font-mono text-zinc-500 truncate max-w-[90%]">${item.title}</span>
                   </div>
                 `}
-                <div class="absolute bottom-2 left-2 flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 text-xs font-semibold rounded-lg bg-black/80 backdrop-blur-md text-slate-200 border border-white/10">
-                    ${epDisplay}
-                  </span>
-                  ${isNumEp ? `
-                    <button onclick="incrementEp('${item.id}', '${item.episode}')" title="Episode Selanjutnya (+1)" class="p-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow transition active:scale-90">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    </button>
-                  ` : ''}
-                </div>
               </div>
-              <h3 class="font-bold text-sm text-white line-clamp-2" title="${item.title}">${item.title}</h3>
+              <h3 class="font-medium text-xs sm:text-sm text-white tracking-tight line-clamp-2 leading-snug" title="${item.title}">${item.title}</h3>
             </div>
 
-            <div class="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-              <select onchange="updateStatus('${item.id}', this.value)" class="text-xs font-semibold py-1.5 px-2.5 rounded-lg border focus:outline-none cursor-pointer ${badgeColor}">
-                <option value="On Going" ${item.status === 'On Going' ? 'selected' : ''} class="bg-slate-900 text-slate-200">▶ On Going</option>
-                <option value="Watchlist" ${item.status === 'Watchlist' ? 'selected' : ''} class="bg-slate-900 text-slate-200">⏱ Watchlist</option>
-                <option value="Finish" ${item.status === 'Finish' ? 'selected' : ''} class="bg-slate-900 text-slate-200">✓ Finish</option>
-              </select>
+            <div class="mt-2.5 pt-2.5 border-t border-zinc-800/80 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Eps</span>
+                  <span class="px-2 py-0.5 text-[11px] font-mono font-medium rounded-md bg-zinc-900 text-zinc-200 border border-zinc-800">
+                    ${epDisplay}
+                  </span>
+                </div>
+                ${isNumEp ? `
+                  <button onclick="incrementEp('${item.id}', '${item.episode}')" title="Episode Selanjutnya (+1)" class="inline-flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-mono font-bold rounded-md bg-white hover:bg-zinc-200 text-black shadow-sm transition active:scale-90">
+                    <svg class="w-3 h-3 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                    <span>1</span>
+                  </button>
+                ` : ''}
+              </div>
 
-              <div class="flex items-center gap-1">
-                <a href="${item.notionUrl}" target="_blank" title="Buka di Notion" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>
-                <button onclick="deleteItem('${item.id}', '${item.title.replace(/'/g, "\\'")}')" title="Hapus dari Notion" class="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              <div class="flex items-center justify-between gap-1.5">
+                <select onchange="updateStatus('${item.id}', this.value)" class="flex-1 text-xs font-mono font-medium py-1.5 px-2 rounded-lg border focus:outline-none cursor-pointer bg-zinc-900 text-zinc-200 border-zinc-800">
+                  <option value="On Going" ${item.status === 'On Going' ? 'selected' : ''} class="bg-zinc-950 text-white">▶ On Going</option>
+                  <option value="Watchlist" ${item.status === 'Watchlist' ? 'selected' : ''} class="bg-zinc-950 text-zinc-300">⏱ Watchlist</option>
+                  <option value="Finish" ${item.status === 'Finish' ? 'selected' : ''} class="bg-zinc-950 text-zinc-400">✓ Finish</option>
+                </select>
+
+                <div class="flex items-center gap-1 shrink-0">
+                  <a href="${item.notionUrl}" target="_blank" title="Buka di Notion" class="p-1.5 text-zinc-500 hover:text-white rounded-lg hover:bg-zinc-900 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                  </a>
+                  <button onclick="deleteItem('${item.id}', '${item.title.replace(/'/g, "\\'")}')" title="Hapus dari Notion" class="p-1.5 text-zinc-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
                 </button>
               </div>
             </div>

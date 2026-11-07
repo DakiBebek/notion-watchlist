@@ -118,31 +118,19 @@ export default function WatchlistCard({
               </span>
             </div>
           )}
+        </div>
 
-          {/* Episode Badge Floating on Card */}
-          <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
-            <span className="px-2.5 py-0.5 text-xs font-mono font-medium rounded-lg bg-black/85 backdrop-blur-md text-zinc-200 border border-white/10 shadow-sm">
-              {item.episode === 'None' ? 'Belum Mulai' : item.episode === 'Movie' ? 'Movie' : `Ep. ${item.episode}`}
-            </span>
-            {isNumericEpisode && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNextEpisode();
-                }}
-                title="Tonton episode selanjutnya (+1)"
-                className="p-1 rounded-md bg-white hover:bg-zinc-200 text-black shadow transition active:scale-90 font-bold"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              </button>
-            )}
-          </div>
+        {/* Title & Action Menu */}
+        <div className="flex items-start justify-between gap-1.5 mt-2.5">
+          <h3 className="font-medium text-xs sm:text-sm text-white tracking-tight line-clamp-2 leading-snug flex-1" title={item.title}>
+            {item.title}
+          </h3>
 
-          {/* Action Menu (Top Right) */}
-          <div className="absolute top-2 right-2">
+          <div className="relative shrink-0">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1.5 rounded-lg bg-black/70 hover:bg-black/90 text-zinc-300 hover:text-white backdrop-blur-md border border-white/10 transition"
+              className="p-1 -mr-1 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-900 transition"
+              title="Menu Opsi"
             >
               <MoreVertical className="w-3.5 h-3.5" />
             </button>
@@ -184,44 +172,65 @@ export default function WatchlistCard({
                     className="w-full flex items-center gap-2 px-3 py-2 text-rose-400 hover:bg-rose-500/10 text-left transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    Hapus / Arsipkan
+                    Hapus / Arsip
                   </button>
                 </div>
               </>
             )}
           </div>
         </div>
-
-        {/* Title */}
-        <h3 className="font-medium text-sm sm:text-base text-white tracking-tight line-clamp-2 leading-snug" title={item.title}>
-          {item.title}
-        </h3>
       </div>
 
-      {/* Footer / Status Switcher */}
-      <div className="mt-3 pt-3 border-t border-zinc-800/70 flex items-center justify-between gap-2">
-        <div className="relative flex-1">
-          <select
-            value={item.status}
-            onChange={(e) => handleStatusChange(e.target.value as WatchStatus)}
-            disabled={isUpdating}
-            className={`w-full text-xs font-mono font-medium py-1.5 px-2.5 rounded-lg border appearance-none cursor-pointer focus:outline-none focus:border-zinc-500 transition ${getStatusStyle(item.status)}`}
-          >
-            <option value="On Going" className="bg-zinc-950 text-white">▶ On Going</option>
-            <option value="Watchlist" className="bg-zinc-950 text-zinc-300">⏱ Watchlist</option>
-            <option value="Finish" className="bg-zinc-950 text-zinc-400">✓ Finish</option>
-          </select>
+      {/* Bottom Section: Episode Progress & Status */}
+      <div className="mt-2.5 pt-2.5 border-t border-zinc-800/80 space-y-2">
+        {/* Episode Row (Above Status Selector) */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Eps</span>
+            <span className="px-2 py-0.5 text-[11px] font-mono font-medium rounded-md bg-zinc-900 text-zinc-200 border border-zinc-800">
+              {item.episode === 'None' ? 'Belum Mulai' : item.episode === 'Movie' ? 'Movie' : `Ep. ${item.episode}`}
+            </span>
+          </div>
+          {isNumericEpisode && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextEpisode();
+              }}
+              title="Tonton episode selanjutnya (+1)"
+              className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-mono font-bold rounded-md bg-white hover:bg-zinc-200 text-black shadow-sm transition active:scale-90"
+            >
+              <Plus className="w-3 h-3 stroke-[3]" />
+              <span>1</span>
+            </button>
+          )}
         </div>
 
-        <a
-          href={item.notionUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Buka di Notion"
-          className="p-1.5 text-zinc-500 hover:text-zinc-200 rounded-lg hover:bg-zinc-900 transition"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-        </a>
+        {/* Status Selector Row */}
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="relative flex-1">
+            <select
+              value={item.status}
+              onChange={(e) => handleStatusChange(e.target.value as WatchStatus)}
+              disabled={isUpdating}
+              className={`w-full text-xs font-mono font-medium py-1.5 px-2 rounded-lg border appearance-none cursor-pointer focus:outline-none focus:border-zinc-500 transition ${getStatusStyle(item.status)}`}
+            >
+              <option value="On Going" className="bg-zinc-950 text-white">▶ On Going</option>
+              <option value="Watchlist" className="bg-zinc-950 text-zinc-300">⏱ Watchlist</option>
+              <option value="Finish" className="bg-zinc-950 text-zinc-400">✓ Finish</option>
+            </select>
+          </div>
+
+          <a
+            href={item.notionUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Buka di Notion"
+            className="p-1.5 text-zinc-500 hover:text-zinc-200 rounded-lg hover:bg-zinc-900 transition shrink-0"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
       </div>
     </div>
   );
