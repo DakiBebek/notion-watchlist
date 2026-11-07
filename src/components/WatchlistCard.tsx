@@ -70,21 +70,29 @@ export default function WatchlistCard({
     >
       <div>
         {/* Cover / Header Poster */}
-        <div className="relative mb-3 h-40 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800/70 flex items-center justify-center">
+        <div className="relative mb-3 w-full aspect-[2/3] max-h-80 sm:max-h-96 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-850 flex items-center justify-center">
           {cardImage ? (
             <div
               onClick={() => onImageClick?.(cardImage, item.title)}
-              className="relative w-full h-full cursor-zoom-in group/img"
+              className="relative w-full h-full cursor-zoom-in group/img flex items-center justify-center overflow-hidden bg-zinc-950"
               title="Klik untuk melihat ukuran penuh"
             >
+              {/* Blurred ambient background */}
+              <img
+                src={cardImage}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-25 scale-125 pointer-events-none"
+              />
+              {/* Uncropped full image */}
               <img
                 src={cardImage}
                 alt={item.title}
                 onError={() => setImageError(true)}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="relative z-10 w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
               />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                <div className="p-1.5 px-3 rounded-lg bg-black/80 backdrop-blur-md text-white border border-white/20 shadow-lg transform scale-95 group-hover/img:scale-100 transition-transform flex items-center gap-1.5 text-xs font-medium">
+              <div className="absolute inset-0 z-20 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <div className="p-1.5 px-3 rounded-lg bg-black/85 backdrop-blur-md text-white border border-white/20 shadow-lg transform scale-95 group-hover/img:scale-100 transition-transform flex items-center gap-1.5 text-xs font-medium">
                   <Maximize2 className="w-3.5 h-3.5" />
                   <span>Lihat Full</span>
                 </div>

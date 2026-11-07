@@ -204,7 +204,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       <p class="text-xs font-mono uppercase tracking-wider text-zinc-400">Sinkronisasi Notion...</p>
     </div>
 
-    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 hidden"></div>
+    <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 hidden"></div>
 
     <div id="emptyState" class="hidden py-20 text-center rounded-2xl border border-dashed border-zinc-800 p-8">
       <div class="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-zinc-400 mb-3 text-xl">🎞</div>
@@ -390,24 +390,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         const cardImg = (item.icon && item.icon.startsWith('http')) ? item.icon : item.cover;
 
         return `
-          <div class="rounded-2xl bg-[#111726]/85 border border-slate-800 hover:border-slate-700 p-4 transition card-glow flex flex-col justify-between">
+          <div class="rounded-2xl bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700 p-3.5 transition-all duration-200 card-hover flex flex-col justify-between">
             <div>
-              <div class="relative h-36 rounded-xl bg-slate-900 border border-slate-800/80 mb-3 overflow-hidden flex items-center justify-center">
+              <div class="relative mb-3 w-full aspect-[2/3] max-h-80 sm:max-h-96 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-850 flex items-center justify-center">
                 ${cardImg ? `
-                  <div onclick="openLightbox('${cardImg}', '${item.title.replace(/'/g, "\\'")}')" class="relative w-full h-full cursor-zoom-in group/img" title="Klik untuk melihat ukuran penuh">
-                    <img src="${cardImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <div class="p-1.5 px-2.5 rounded-xl bg-black/70 backdrop-blur-md text-white text-[11px] font-semibold border border-white/20 flex items-center gap-1 shadow-lg">
+                  <div onclick="openLightbox('${cardImg}', '${item.title.replace(/'/g, "\\'")}')" class="relative w-full h-full cursor-zoom-in group/img flex items-center justify-center overflow-hidden bg-zinc-950" title="Klik untuk melihat ukuran penuh">
+                    <img src="${cardImg}" alt="" class="absolute inset-0 w-full h-full object-cover blur-2xl opacity-25 scale-125 pointer-events-none">
+                    <img src="${cardImg}" class="relative z-10 w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300 drop-shadow-md">
+                    <div class="absolute inset-0 z-20 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                      <div class="p-1.5 px-3 rounded-lg bg-black/85 backdrop-blur-md text-white text-[11px] font-semibold border border-white/20 flex items-center gap-1 shadow-lg">
                         🔍 Lihat Full
                       </div>
                     </div>
                   </div>
                 ` : `
-                  <div class="w-full h-full bg-gradient-to-br from-blue-900/40 via-indigo-900/20 to-purple-900/40 flex flex-col items-center justify-center p-3 text-center">
-                    <div class="w-12 h-12 rounded-xl bg-slate-900/70 border border-slate-700/60 flex items-center justify-center text-xl mb-1 shadow-inner">
+                  <div class="w-full h-full bg-gradient-to-br from-zinc-900 via-zinc-900/80 to-zinc-950 flex flex-col items-center justify-center p-3 text-center">
+                    <div class="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-850 flex items-center justify-center text-xl mb-1 shadow-inner">
                       ${item.icon ? (item.icon.startsWith('http') ? `<img src="${item.icon}" class="w-full h-full object-cover rounded-xl">` : item.icon) : '🎬'}
                     </div>
-                    <span class="text-[11px] font-semibold text-slate-300 truncate max-w-[90%]">${item.title}</span>
+                    <span class="text-[11px] font-mono text-zinc-500 truncate max-w-[90%]">${item.title}</span>
                   </div>
                 `}
                 <div class="absolute bottom-2 left-2 flex items-center gap-1.5">
