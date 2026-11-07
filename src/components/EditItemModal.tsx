@@ -41,8 +41,9 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
       setTitle(item.title);
       setStatus(item.status);
       setEpisode(item.episode);
-      setCoverUrl(item.cover || '');
-      setImagePreview(item.cover || null);
+      const existingImg = (item.icon && item.icon.startsWith('http')) ? item.icon : (item.cover || '');
+      setCoverUrl(existingImg);
+      setImagePreview(existingImg || null);
       setError(null);
     }
   }, [item]);

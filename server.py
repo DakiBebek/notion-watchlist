@@ -348,11 +348,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         const epDisplay = item.episode === 'None' ? 'Belum Mulai' : (item.episode === 'Movie' ? 'Movie' : 'Ep. ' + item.episode);
 
+        const cardImg = (item.icon && item.icon.startsWith('http')) ? item.icon : item.cover;
+
         return `
           <div class="rounded-2xl bg-[#111726]/85 border border-slate-800 hover:border-slate-700 p-4 transition card-glow flex flex-col justify-between">
             <div>
               <div class="relative h-36 rounded-xl bg-slate-900 border border-slate-800/80 mb-3 overflow-hidden flex items-center justify-center">
-                ${item.cover ? `<img src="${item.cover}" class="w-full h-full object-cover">` : `
+                ${cardImg ? `<img src="${cardImg}" class="w-full h-full object-cover">` : `
                   <div class="w-full h-full bg-gradient-to-br from-blue-900/40 via-indigo-900/20 to-purple-900/40 flex flex-col items-center justify-center p-3 text-center">
                     <div class="w-12 h-12 rounded-xl bg-slate-900/70 border border-slate-700/60 flex items-center justify-center text-xl mb-1 shadow-inner">
                       ${item.icon ? (item.icon.startsWith('http') ? `<img src="${item.icon}" class="w-full h-full object-cover rounded-xl">` : item.icon) : '🎬'}
@@ -596,6 +598,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                     }
                 }
                 if cover_url and cover_url.startswith("http"):
+                    payload["icon"] = {"type": "external", "external": {"url": cover_url}}
                     payload["cover"] = {"type": "external", "external": {"url": cover_url}}
                 page = call_notion("https://api.notion.com/v1/pages", method="POST", data=payload)
                 self.send_json(201, {"success": True, "data": format_notion_page(page)})
@@ -622,8 +625,10 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             req_body = {"properties": props}
             if "coverUrl" in body:
                 if body["coverUrl"] and body["coverUrl"].startswith("http"):
+                    req_body["icon"] = {"type": "external", "external": {"url": body["coverUrl"]}}
                     req_body["cover"] = {"type": "external", "external": {"url": body["coverUrl"]}}
                 else:
+                    req_body["icon"] = None
                     req_body["cover"] = None
 
             try:

@@ -100,9 +100,9 @@ export default function WatchlistCard({
       <div>
         {/* Cover / Header Poster */}
         <div className="relative mb-3.5 h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-800/60 flex items-center justify-center">
-          {item.cover && !imageError ? (
+          {(!imageError && ((item.icon && item.icon.startsWith('http')) ? item.icon : item.cover)) ? (
             <img
-              src={item.cover}
+              src={(item.icon && item.icon.startsWith('http')) ? item.icon : item.cover!}
               alt={item.title}
               onError={() => setImageError(true)}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

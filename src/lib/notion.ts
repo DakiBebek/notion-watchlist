@@ -92,12 +92,14 @@ export async function createWatchItem(params: {
   status?: WatchStatus;
   episode?: string;
   coverUrl?: string | null;
+  iconUrl?: string | null;
 }): Promise<WatchItem> {
   if (!NOTION_TOKEN || !NOTION_DATABASE_ID) {
     throw new Error('NOTION_TOKEN and NOTION_DATABASE_ID must be set in environment variables');
   }
 
-  const { title, status = 'Watchlist', episode = 'None', coverUrl } = params;
+  const { title, status = 'Watchlist', episode = 'None', coverUrl, iconUrl } = params;
+  const imageUrl = iconUrl || coverUrl;
 
   const payload: any = {
     parent: { database_id: NOTION_DATABASE_ID },
@@ -124,11 +126,18 @@ export async function createWatchItem(params: {
     },
   };
 
-  if (coverUrl && coverUrl.startsWith('http')) {
+  if (imageUrl && imageUrl.startsWith('http')) {
+    // Set both icon and cover so Notion table displays the icon next to title
+    payload.icon = {
+      type: 'external',
+      external: {
+        url: imageUrl,
+      },
+    };
     payload.cover = {
       type: 'external',
       external: {
-        url: coverUrl,
+        url: imageUrl,
       },
     };
   }
@@ -155,6 +164,7 @@ export async function updateWatchItem(
     status?: WatchStatus;
     episode?: string;
     coverUrl?: string | null;
+    iconUrl?: string | null;
   }
 ): Promise<WatchItem> {
   if (!NOTION_TOKEN) {
@@ -192,16 +202,25 @@ export async function updateWatchItem(
   }
 
   const body: any = { properties };
+  const imageUrl = params.iconUrl !== undefined ? params.iconUrl : params.coverUrl;
 
-  if (params.coverUrl !== undefined) {
-    if (params.coverUrl && params.coverUrl.startsWith('http')) {
+  if (imageUrl !== undefined) {
+    if (imageUrl && imageUrl.startsWith('http')) {
+      // Set Notion page icon (and cover) so Notion table shows the icon
+      body.icon = {
+        type: 'external',
+        external: {
+          url: imageUrl,
+        },
+      };
       body.cover = {
         type: 'external',
         external: {
-          url: params.coverUrl,
+          url: imageUrl,
         },
       };
     } else {
+      body.icon = null;
       body.cover = null;
     }
   }
