@@ -541,31 +541,44 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path == "/api/upload":
-            # Simple upload to imgbb
-            import cgi, urllib.parse
+            # Direct upload with tmpfiles.org (zero key needed)
+            import cgi
             content_type = self.headers.get("Content-Type", "")
             form = cgi.FieldStorage(
                 fp=self.rfile,
                 headers=self.headers,
                 environ={"REQUEST_METHOD": "POST", "CONTENT_TYPE": content_type}
             )
-            fileitem = form["image"] if "image" in form else None
+            fileitem = form["image"] if "image" in form else (form["file"] if "file" in form else None)
             if fileitem is not None and fileitem.file:
-                import base64
                 file_bytes = fileitem.file.read()
-                b64_str = base64.b64encode(file_bytes).decode("utf-8")
-                api_key = os.environ.get("IMGBB_API_KEY", "6d207e02198a847aa5ad3ac5054f8178")
-                post_data = urllib.parse.urlencode({"image": b64_str}).encode("utf-8")
+                filename = fileitem.filename or "upload.png"
+                boundary = "----FormBoundaryUploadTmpFiles"
+                body = (
+                    b"--" + boundary.encode() + b"\r\n"
+                    b'Content-Disposition: form-data; name="file"; filename="' + filename.encode() + b'"\r\n'
+                    b"Content-Type: image/png\r\n\r\n" +
+                    file_bytes +
+                    b"\r\n--" + boundary.encode() + b"--\r\n"
+                )
                 try:
-                    req = urllib.request.Request(f"https://api.imgbb.com/1/upload?key={api_key}", data=post_data)
-                    with urllib.request.urlopen(req) as resp:
+                    req = urllib.request.Request(
+                        "https://tmpfiles.org/api/v1/upload",
+                        data=body,
+                        headers={
+                            "Content-Type": f"multipart/form-data; boundary={boundary}",
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                        }
+                    )
+                    with urllib.request.urlopen(req, timeout=10) as resp:
                         res_json = json.loads(resp.read().decode("utf-8"))
-                        img_url = res_json["data"]["url"]
-                        self.send_json(200, {"success": True, "url": img_url})
+                        raw_url = res_json["data"]["url"]
+                        direct_url = raw_url.replace("https://tmpfiles.org/", "https://tmpfiles.org/dl/")
+                        self.send_json(200, {"success": True, "url": direct_url})
                 except Exception as e:
                     self.send_json(500, {"success": False, "error": str(e)})
             else:
-                self.send_json(400, {"success": False, "error": "No file uploaded"})
+                self.send_json(400, {"success": False, "error": "File tidak ditemukan"})
         elif self.path == "/api/watchlist":
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length).decode("utf-8"))
