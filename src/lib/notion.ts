@@ -91,12 +91,13 @@ export async function createWatchItem(params: {
   title: string;
   status?: WatchStatus;
   episode?: string;
+  coverUrl?: string | null;
 }): Promise<WatchItem> {
   if (!NOTION_TOKEN || !NOTION_DATABASE_ID) {
     throw new Error('NOTION_TOKEN and NOTION_DATABASE_ID must be set in environment variables');
   }
 
-  const { title, status = 'Watchlist', episode = 'None' } = params;
+  const { title, status = 'Watchlist', episode = 'None', coverUrl } = params;
 
   const payload: any = {
     parent: { database_id: NOTION_DATABASE_ID },
@@ -123,6 +124,15 @@ export async function createWatchItem(params: {
     },
   };
 
+  if (coverUrl && coverUrl.startsWith('http')) {
+    payload.cover = {
+      type: 'external',
+      external: {
+        url: coverUrl,
+      },
+    };
+  }
+
   const response = await fetch('https://api.notion.com/v1/pages', {
     method: 'POST',
     headers: NOTION_HEADERS,
@@ -144,6 +154,7 @@ export async function updateWatchItem(
     title?: string;
     status?: WatchStatus;
     episode?: string;
+    coverUrl?: string | null;
   }
 ): Promise<WatchItem> {
   if (!NOTION_TOKEN) {
@@ -180,10 +191,25 @@ export async function updateWatchItem(
     };
   }
 
+  const body: any = { properties };
+
+  if (params.coverUrl !== undefined) {
+    if (params.coverUrl && params.coverUrl.startsWith('http')) {
+      body.cover = {
+        type: 'external',
+        external: {
+          url: params.coverUrl,
+        },
+      };
+    } else {
+      body.cover = null;
+    }
+  }
+
   const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
     method: 'PATCH',
     headers: NOTION_HEADERS,
-    body: JSON.stringify({ properties }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {

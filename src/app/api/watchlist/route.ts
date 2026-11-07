@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, status, episode } = body;
+    const { title, status, episode, coverUrl } = body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return NextResponse.json(
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       title: title.trim(),
       status: status || 'Watchlist',
       episode: episode || 'None',
+      coverUrl: coverUrl || null,
     });
 
     return NextResponse.json({ success: true, data: newItem }, { status: 201 });

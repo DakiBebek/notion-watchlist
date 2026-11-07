@@ -223,6 +223,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <input type="text" id="newTitle" required placeholder="Contoh: Frieren S2..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
         <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Poster / Cover Gambar (Opsional)</label>
+          <div class="flex gap-2">
+            <input type="url" id="newCover" placeholder="Tempel URL gambar (https://...)" class="flex-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-blue-500">
+            <input type="file" id="newFileInput" accept="image/*" class="hidden" onchange="handleLocalUpload(this)">
+            <button type="button" onclick="document.getElementById('newFileInput').click()" class="px-3 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-slate-200">
+              📁 Upload
+            </button>
+          </div>
+          <p id="uploadStatus" class="text-[10px] text-slate-400 mt-1"></p>
+        </div>
+        <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Status</label>
           <select id="newStatus" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none">
             <option value="Watchlist">⏱ Watchlist (Rencana)</option>
@@ -429,12 +440,34 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       else numInput.classList.add('hidden');
     }
 
+    async function handleLocalUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const statusEl = document.getElementById('uploadStatus');
+      statusEl.innerText = '⏳ Mengunggah gambar...';
+      const formData = new FormData();
+      formData.append('image', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success && data.url) {
+          document.getElementById('newCover').value = data.url;
+          statusEl.innerText = '✅ Gambar berhasil diupload!';
+        } else {
+          statusEl.innerText = '❌ Gagal upload: ' + (data.error || 'Coba gunakan link URL.');
+        }
+      } catch (err) {
+        statusEl.innerText = '❌ Gagal upload: ' + err.message;
+      }
+    }
+
     async function submitNewItem(e) {
       e.preventDefault();
       const title = document.getElementById('newTitle').value.trim();
       const status = document.getElementById('newStatus').value;
       const fmt = document.getElementById('newFormat').value;
       const ep = fmt === 'Series' ? document.getElementById('newEpNum').value : fmt;
+      const coverUrl = document.getElementById('newCover').value.trim();
 
       const btn = document.getElementById('saveBtn');
       btn.innerText = 'Menyimpan...';
@@ -444,7 +477,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         const res = await fetch('/api/watchlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, status, episode: ep })
+          body: JSON.stringify({ title, status, episode: ep, coverUrl: coverUrl || null })
         });
         const data = await res.json();
         allItems.unshift(data.data);
@@ -452,6 +485,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         renderItems();
         closeAddModal();
         document.getElementById('newTitle').value = '';
+        document.getElementById('newCover').value = '';
+        document.getElementById('uploadStatus').innerText = '';
       } catch (err) {
         alert('Gagal simpan ke Notion: ' + err.message);
       } finally {
@@ -505,12 +540,39 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_POST(self):
-        if self.path == "/api/watchlist":
+        if self.path == "/api/upload":
+            # Simple upload to imgbb
+            import cgi, urllib.parse
+            content_type = self.headers.get("Content-Type", "")
+            form = cgi.FieldStorage(
+                fp=self.rfile,
+                headers=self.headers,
+                environ={"REQUEST_METHOD": "POST", "CONTENT_TYPE": content_type}
+            )
+            fileitem = form["image"] if "image" in form else None
+            if fileitem is not None and fileitem.file:
+                import base64
+                file_bytes = fileitem.file.read()
+                b64_str = base64.b64encode(file_bytes).decode("utf-8")
+                api_key = os.environ.get("IMGBB_API_KEY", "6d207e02198a847aa5ad3ac5054f8178")
+                post_data = urllib.parse.urlencode({"image": b64_str}).encode("utf-8")
+                try:
+                    req = urllib.request.Request(f"https://api.imgbb.com/1/upload?key={api_key}", data=post_data)
+                    with urllib.request.urlopen(req) as resp:
+                        res_json = json.loads(resp.read().decode("utf-8"))
+                        img_url = res_json["data"]["url"]
+                        self.send_json(200, {"success": True, "url": img_url})
+                except Exception as e:
+                    self.send_json(500, {"success": False, "error": str(e)})
+            else:
+                self.send_json(400, {"success": False, "error": "No file uploaded"})
+        elif self.path == "/api/watchlist":
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length).decode("utf-8"))
             title = body.get("title", "")
             status = body.get("status", "Watchlist")
             episode = body.get("episode", "None")
+            cover_url = body.get("coverUrl")
             try:
                 payload = {
                     "parent": {"database_id": NOTION_DATABASE_ID},
@@ -520,6 +582,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                         "Episode": {"select": {"name": episode}},
                     }
                 }
+                if cover_url and cover_url.startswith("http"):
+                    payload["cover"] = {"type": "external", "external": {"url": cover_url}}
                 page = call_notion("https://api.notion.com/v1/pages", method="POST", data=payload)
                 self.send_json(201, {"success": True, "data": format_notion_page(page)})
             except Exception as e:
@@ -542,11 +606,18 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             if "title" in body:
                 props["Judul"] = {"title": [{"text": {"content": body["title"]}}]}
 
+            req_body = {"properties": props}
+            if "coverUrl" in body:
+                if body["coverUrl"] and body["coverUrl"].startswith("http"):
+                    req_body["cover"] = {"type": "external", "external": {"url": body["coverUrl"]}}
+                else:
+                    req_body["cover"] = None
+
             try:
                 page = call_notion(
                     f"https://api.notion.com/v1/pages/{page_id}",
                     method="PATCH",
-                    data={"properties": props}
+                    data=req_body
                 )
                 self.send_json(200, {"success": True, "data": format_notion_page(page)})
             except Exception as e:

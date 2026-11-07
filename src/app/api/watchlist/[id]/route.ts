@@ -10,12 +10,13 @@ export async function PATCH(
   try {
     const { id } = params;
     const body = await request.json();
-    const { title, status, episode } = body;
+    const { title, status, episode, coverUrl } = body;
 
     const updated = await updateWatchItem(id, {
       title,
       status,
       episode,
+      coverUrl,
     });
 
     return NextResponse.json({ success: true, data: updated });

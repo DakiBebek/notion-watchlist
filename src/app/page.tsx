@@ -139,6 +139,7 @@ export default function HomePage() {
     title: string;
     status: WatchStatus;
     episode: string;
+    coverUrl?: string | null;
   }) => {
     const res = await fetch('/api/watchlist', {
       method: 'POST',
@@ -155,7 +156,7 @@ export default function HomePage() {
   // Edit Item Handler
   const handleSaveEdit = async (
     id: string,
-    data: { title: string; status: WatchStatus; episode: string }
+    data: { title: string; status: WatchStatus; episode: string; coverUrl?: string | null }
   ) => {
     const res = await fetch(`/api/watchlist/${id}`, {
       method: 'PATCH',
