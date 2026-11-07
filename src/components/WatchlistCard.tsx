@@ -21,6 +21,7 @@ export default function WatchlistCard({
 }: WatchlistCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const getStatusBadge = (status: WatchStatus) => {
     switch (status) {
@@ -99,10 +100,11 @@ export default function WatchlistCard({
       <div>
         {/* Cover / Header Poster */}
         <div className="relative mb-3.5 h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-800/60 flex items-center justify-center">
-          {item.cover ? (
+          {item.cover && !imageError ? (
             <img
               src={item.cover}
               alt={item.title}
+              onError={() => setImageError(true)}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Check, Edit2, Image as ImageIcon, Upload, Trash2, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { X, Check, Edit2, Image as ImageIcon, Upload, Trash2, Link as LinkIcon, Loader2, Key, Info } from 'lucide-react';
 import { WatchItem, WatchStatus } from '@/types/watchlist';
 
 interface EditItemModalProps {
@@ -20,12 +20,21 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
   const [coverUrl, setCoverUrl] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
+  const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
+  const [imgbbKey, setImgbbKey] = useState('');
+  const [showKeyInput, setShowKeyInput] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedKey = localStorage.getItem('imgbb_api_key') || '';
+      setImgbbKey(savedKey);
+    }
+  }, []);
 
   useEffect(() => {
     if (item) {
@@ -44,6 +53,14 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const activeKey = imgbbKey.trim() || (typeof window !== 'undefined' ? localStorage.getItem('imgbb_api_key') || '' : '');
+
+    if (!activeKey) {
+      setShowKeyInput(true);
+      setError('Untuk upload file dari HP/laptop, masukkan ImgBB API Key gratis di bawah atau gunakan tab "Link URL" untuk tempel link gambar.');
+      return;
+    }
+
     const localUrl = URL.createObjectURL(file);
     setImagePreview(localUrl);
     setError(null);
@@ -53,22 +70,31 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
       const formData = new FormData();
       formData.append('image', file);
 
-      const res = await fetch('/api/upload', {
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${activeKey}`, {
         method: 'POST',
         body: formData,
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Gagal mengupload gambar');
+        throw new Error(data?.error?.message || 'Gagal mengupload gambar ke ImgBB');
       }
 
-      setCoverUrl(data.url);
+      const uploadedUrl = data.data.display_url || data.data.url;
+      setCoverUrl(uploadedUrl);
+      setImagePreview(uploadedUrl);
     } catch (err: any) {
       console.error(err);
-      setError(`Upload foto gagal: ${err.message}`);
+      setError(`Upload foto gagal: ${err.message}. Coba gunakan opsi "Link URL".`);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleSaveKey = (val: string) => {
+    setImgbbKey(val);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('imgbb_api_key', val.trim());
     }
   };
 
@@ -155,27 +181,27 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                 <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
                 Poster / Cover Gambar
               </label>
-              <div className="flex text-[11px] gap-2 text-slate-400">
+              <div className="flex text-[11px] gap-2 text-slate-400 bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-800">
                 <button
                   type="button"
-                  onClick={() => setUploadMode('file')}
-                  className={`hover:text-white ${uploadMode === 'file' ? 'text-blue-400 font-semibold' : ''}`}
+                  onClick={() => setUploadMode('url')}
+                  className={`hover:text-white transition ${uploadMode === 'url' ? 'text-blue-400 font-bold' : ''}`}
                 >
-                  Upload File
+                  🔗 Link URL
                 </button>
                 <span>|</span>
                 <button
                   type="button"
-                  onClick={() => setUploadMode('url')}
-                  className={`hover:text-white ${uploadMode === 'url' ? 'text-blue-400 font-semibold' : ''}`}
+                  onClick={() => setUploadMode('file')}
+                  className={`hover:text-white transition ${uploadMode === 'file' ? 'text-blue-400 font-bold' : ''}`}
                 >
-                  Link URL
+                  📁 Upload File
                 </button>
               </div>
             </div>
 
             {(imagePreview || coverUrl) ? (
-              <div className="relative h-40 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 flex items-center justify-center group">
+              <div className="relative h-40 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 flex items-center justify-center group mb-2">
                 <img
                   src={imagePreview || coverUrl}
                   alt="Poster Preview"
@@ -198,7 +224,30 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                   </button>
                 )}
               </div>
-            ) : uploadMode === 'file' ? (
+            ) : null}
+
+            {uploadMode === 'url' ? (
+              <div>
+                <div className="relative">
+                  <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="url"
+                    placeholder="Tempel link gambar (contoh: https://images.../poster.jpg)"
+                    value={coverUrl}
+                    onChange={(e) => {
+                      const val = e.target.value.trim();
+                      setCoverUrl(val);
+                      setImagePreview(val || null);
+                    }}
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
+                  <Info className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Tips: Klik kanan gambar di Google / MAL &rarr; <b>Salin alamat gambar</b> &rarr; tempel di sini.</span>
+                </p>
+              </div>
+            ) : (
               <div>
                 <input
                   type="file"
@@ -210,30 +259,49 @@ export default function EditItemModal({ item, isOpen, onClose, onSave }: EditIte
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-6 px-4 rounded-xl border border-dashed border-slate-700 hover:border-blue-500/80 bg-slate-900/50 hover:bg-slate-900/80 transition flex flex-col items-center justify-center gap-2 cursor-pointer group"
+                  className="w-full py-5 px-4 rounded-xl border border-dashed border-slate-700 hover:border-blue-500/80 bg-slate-900/50 hover:bg-slate-900/80 transition flex flex-col items-center justify-center gap-1.5 cursor-pointer group"
                 >
-                  <div className="p-2.5 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 text-blue-400 transition">
+                  <div className="p-2 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 text-blue-400 transition">
                     <Upload className="w-5 h-5" />
                   </div>
-                  <div className="text-center">
-                    <span className="text-xs font-medium text-slate-300 block">Pilih foto dari Galeri HP / Komputer</span>
-                    <span className="text-[10px] text-slate-500">Mendukung JPG, PNG, WEBP</span>
-                  </div>
+                  <span className="text-xs font-medium text-slate-300">Pilih foto dari Galeri HP / Laptop</span>
+                  <span className="text-[10px] text-slate-500">JPG, PNG, WEBP</span>
                 </button>
-              </div>
-            ) : (
-              <div className="relative">
-                <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input
-                  type="url"
-                  placeholder="https://images.../poster.jpg"
-                  value={coverUrl}
-                  onChange={(e) => {
-                    setCoverUrl(e.target.value);
-                    setImagePreview(e.target.value || null);
-                  }}
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
+
+                <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyInput(!showKeyInput)}
+                    className="hover:text-blue-400 flex items-center gap-1 text-slate-400 underline"
+                  >
+                    <Key className="w-3 h-3" />
+                    {imgbbKey ? 'Ganti ImgBB API Key' : 'Atur ImgBB API Key (Gratis)'}
+                  </button>
+                  {imgbbKey && <span className="text-emerald-400 text-[10px]">✓ Key Aktif</span>}
+                </div>
+
+                {showKeyInput && (
+                  <div className="mt-2 p-3 rounded-xl bg-slate-900/90 border border-slate-700 text-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-300">ImgBB API Key:</span>
+                      <a
+                        href="https://api.imgbb.com"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-400 hover:underline text-[10px]"
+                      >
+                        Dapatkan Key Gratis &rarr;
+                      </a>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Paste 32-character key di sini..."
+                      value={imgbbKey}
+                      onChange={(e) => handleSaveKey(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
