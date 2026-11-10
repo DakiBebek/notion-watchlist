@@ -191,12 +191,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <!-- Search & Filter Controls -->
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
       <div class="relative flex-1 max-w-md">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        <input type="text" id="searchInput" oninput="renderItems()" placeholder="Cari anime, film, series..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <input type="text" id="searchInput" oninput="toggleClearSearch(); renderItems();" placeholder="Cari anime, film, series..." class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-zinc-950/80 border border-zinc-850 hover:border-zinc-700 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition">
+        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white transition" title="Hapus pencarian">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
       <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
         <!-- Sort Dropdown -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-300">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-950/80 border border-zinc-850 text-xs text-zinc-300 shrink-0">
           <svg class="w-3.5 h-3.5 text-zinc-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
           <span class="text-zinc-500 hidden sm:inline">Urutan:</span>
           <select id="sortSelect" onchange="currentSort = this.value; renderItems();" class="bg-transparent text-xs text-zinc-200 font-medium focus:outline-none cursor-pointer pr-1">
@@ -209,18 +212,47 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </select>
         </div>
 
-        <div class="flex items-center gap-1 p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-          <button onclick="setFormat('all')" id="fmt-all" class="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold shadow-sm">Semua Format</button>
-          <button onclick="setFormat('series')" id="fmt-series" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Series</button>
-          <button onclick="setFormat('movie')" id="fmt-movie" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium">Movie</button>
+        <div class="flex items-center p-1 rounded-xl bg-zinc-950/80 border border-zinc-850 text-xs shrink-0">
+          <button onclick="setFormat('all')" id="fmt-all" class="px-3.5 py-1.5 rounded-lg bg-white text-black font-semibold shadow-sm transition">Semua</button>
+          <button onclick="setFormat('series')" id="fmt-series" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium transition flex items-center gap-1.5">
+            <span>Series</span>
+            <span id="badge-series" class="hidden text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-zinc-900 text-zinc-400 border border-zinc-800"></span>
+          </button>
+          <button onclick="setFormat('movie')" id="fmt-movie" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-white font-medium transition flex items-center gap-1.5">
+            <span>Movie</span>
+            <span id="badge-movie" class="hidden text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-zinc-900 text-zinc-400 border border-zinc-800"></span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Watchlist Grid -->
-    <div id="loader" class="py-24 flex flex-col items-center justify-center text-zinc-500">
-      <div class="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
-      <p class="text-xs font-mono uppercase tracking-wider text-zinc-400">Sinkronisasi Notion...</p>
+    <!-- Skeleton Loader Grid -->
+    <div id="loader" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+      <div class="rounded-2xl bg-zinc-950/80 border border-zinc-850 p-3.5 space-y-3 animate-pulse">
+        <div class="w-full aspect-[2/3] rounded-xl bg-zinc-900"></div>
+        <div class="h-4 bg-zinc-900 rounded w-3/4"></div>
+        <div class="h-8 bg-zinc-900 rounded-lg"></div>
+      </div>
+      <div class="rounded-2xl bg-zinc-950/80 border border-zinc-850 p-3.5 space-y-3 animate-pulse">
+        <div class="w-full aspect-[2/3] rounded-xl bg-zinc-900"></div>
+        <div class="h-4 bg-zinc-900 rounded w-3/4"></div>
+        <div class="h-8 bg-zinc-900 rounded-lg"></div>
+      </div>
+      <div class="rounded-2xl bg-zinc-950/80 border border-zinc-850 p-3.5 space-y-3 animate-pulse">
+        <div class="w-full aspect-[2/3] rounded-xl bg-zinc-900"></div>
+        <div class="h-4 bg-zinc-900 rounded w-3/4"></div>
+        <div class="h-8 bg-zinc-900 rounded-lg"></div>
+      </div>
+      <div class="rounded-2xl bg-zinc-950/80 border border-zinc-850 p-3.5 space-y-3 animate-pulse">
+        <div class="w-full aspect-[2/3] rounded-xl bg-zinc-900"></div>
+        <div class="h-4 bg-zinc-900 rounded w-3/4"></div>
+        <div class="h-8 bg-zinc-900 rounded-lg"></div>
+      </div>
+      <div class="rounded-2xl bg-zinc-950/80 border border-zinc-850 p-3.5 space-y-3 animate-pulse">
+        <div class="w-full aspect-[2/3] rounded-xl bg-zinc-900"></div>
+        <div class="h-4 bg-zinc-900 rounded w-3/4"></div>
+        <div class="h-8 bg-zinc-900 rounded-lg"></div>
+      </div>
     </div>
 
     <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 hidden"></div>
@@ -381,6 +413,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
     }
 
+    function toggleClearSearch() {
+      const input = document.getElementById('searchInput');
+      const btn = document.getElementById('clearSearchBtn');
+      if (input.value.trim()) {
+        btn.classList.remove('hidden');
+      } else {
+        btn.classList.add('hidden');
+      }
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      toggleClearSearch();
+      renderItems();
+    }
+
     function updateStats() {
       const ongoing = allItems.filter(i => i.status === 'On Going').length;
       const watchlist = allItems.filter(i => i.status === 'Watchlist').length;
@@ -389,6 +438,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       document.getElementById('count-ongoing').innerText = ongoing;
       document.getElementById('count-watchlist').innerText = watchlist;
       document.getElementById('count-finish').innerText = finish;
+
+      const seriesCount = allItems.filter(i => i.episode !== 'Movie' && i.episode !== 'None').length;
+      const movieCount = allItems.filter(i => i.episode === 'Movie').length;
+      const badgeSeries = document.getElementById('badge-series');
+      const badgeMovie = document.getElementById('badge-movie');
+      if (seriesCount > 0) {
+        badgeSeries.innerText = seriesCount;
+        badgeSeries.classList.remove('hidden');
+      } else {
+        badgeSeries.classList.add('hidden');
+      }
+      if (movieCount > 0) {
+        badgeMovie.innerText = movieCount;
+        badgeMovie.classList.remove('hidden');
+      } else {
+        badgeMovie.classList.add('hidden');
+      }
     }
 
     function setFilter(status) {

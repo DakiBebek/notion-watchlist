@@ -8,8 +8,9 @@ import AddItemModal from '@/components/AddItemModal';
 import EditItemModal from '@/components/EditItemModal';
 import ImageLightbox from '@/components/ImageLightbox';
 import LockScreen from '@/components/LockScreen';
+import SkeletonGrid from '@/components/SkeletonGrid';
 import { WatchItem, WatchStatus, WatchlistStats } from '@/types/watchlist';
-import { Search, SlidersHorizontal, Film, AlertCircle, RefreshCw, ArrowUpDown } from 'lucide-react';
+import { Search, Film, AlertCircle, RefreshCw, ArrowUpDown, X, Plus, RotateCcw } from 'lucide-react';
 
 export default function HomePage() {
   const [items, setItems] = useState<WatchItem[]>([]);
@@ -101,6 +102,13 @@ export default function HomePage() {
     };
   }, [items]);
 
+  // Compute format counts for badges
+  const formatCounts = useMemo(() => {
+    const series = items.filter((i) => i.episode !== 'Movie' && i.episode !== 'None').length;
+    const movie = items.filter((i) => i.episode === 'Movie').length;
+    return { series, movie };
+  }, [items]);
+
   // Filtered & Sorted items
   const filteredItems = useMemo(() => {
     const list = items.filter((item) => {
@@ -156,7 +164,6 @@ export default function HomePage() {
 
   // Update Status Handler (Optimistic)
   const handleUpdateStatus = async (id: string, newStatus: WatchStatus) => {
-    // Optimistic UI
     const prevItems = [...items];
     setItems((curr) =>
       curr.map((it) => (it.id === id ? { ...it, status: newStatus } : it))
@@ -174,7 +181,7 @@ export default function HomePage() {
       }
     } catch (err: any) {
       alert(`Gagal sinkron status ke Notion: ${err.message}`);
-      setItems(prevItems); // Rollback
+      setItems(prevItems);
     }
   };
 
@@ -266,7 +273,7 @@ export default function HomePage() {
   if (isUnlocked === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
-        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -277,7 +284,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090b] text-zinc-100">
+    <div className="min-h-screen flex flex-col bg-[#09090b] text-zinc-100 selection:bg-white selection:text-black">
       <Navbar
         onAddClick={() => setIsAddOpen(true)}
         onRefresh={() => fetchWatchlist(true)}
@@ -288,17 +295,17 @@ export default function HomePage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Error banner if any */}
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-between">
+          <div className="mb-6 p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-zinc-400" />
+              <AlertCircle className="w-5 h-5 text-zinc-400 shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-white">Gagal tersambung ke Notion</p>
-                <p className="text-xs text-zinc-500">{error}</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{error}</p>
               </div>
             </div>
             <button
               onClick={() => fetchWatchlist(true)}
-              className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition"
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition shadow-sm"
             >
               Coba Lagi
             </button>
@@ -314,20 +321,30 @@ export default function HomePage() {
 
         {/* Search & Filters Controls */}
         <div className="my-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Search Input with Clear Button */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
             <input
               type="text"
               placeholder="Cari judul anime, film, series..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition"
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-zinc-950/80 border border-zinc-850 hover:border-zinc-700 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white rounded-md transition"
+                title="Hapus pencarian"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
             {/* Sorting Select */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-300">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-950/80 border border-zinc-850 text-xs text-zinc-300 shrink-0">
               <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <span className="text-zinc-500 hidden sm:inline">Urutan:</span>
               <select
@@ -345,7 +362,8 @@ export default function HomePage() {
               </select>
             </div>
 
-            <div className="flex items-center p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
+            {/* Format Filter Tabs */}
+            <div className="flex items-center p-1 rounded-xl bg-zinc-950/80 border border-zinc-850 text-xs shrink-0">
               <button
                 onClick={() => setFormatFilter('all')}
                 className={`px-3.5 py-1.5 rounded-lg transition font-medium ${
@@ -354,52 +372,82 @@ export default function HomePage() {
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                Semua Format
+                Semua
               </button>
               <button
                 onClick={() => setFormatFilter('series')}
-                className={`px-3.5 py-1.5 rounded-lg transition font-medium ${
+                className={`px-3.5 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5 ${
                   formatFilter === 'series'
                     ? 'bg-white text-black shadow-sm font-semibold'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                Series
+                <span>Series</span>
+                {formatCounts.series > 0 && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    formatFilter === 'series' ? 'bg-zinc-200 text-black' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                  }`}>
+                    {formatCounts.series}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setFormatFilter('movie')}
-                className={`px-3.5 py-1.5 rounded-lg transition font-medium ${
+                className={`px-3.5 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5 ${
                   formatFilter === 'movie'
                     ? 'bg-white text-black shadow-sm font-semibold'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                Movie
+                <span>Movie</span>
+                {formatCounts.movie > 0 && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    formatFilter === 'movie' ? 'bg-zinc-200 text-black' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                  }`}>
+                    {formatCounts.movie}
+                  </span>
+                )}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Content Grid */}
+        {/* Content Grid / Skeletons */}
         {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center text-zinc-500">
-            <RefreshCw className="w-7 h-7 animate-spin text-white mb-3" />
-            <p className="text-xs font-mono uppercase tracking-wider text-zinc-400">Menghubungkan ke Notion...</p>
-          </div>
+          <SkeletonGrid count={10} />
         ) : filteredItems.length === 0 ? (
-          <div className="py-20 text-center rounded-2xl border border-dashed border-zinc-800 p-8">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-zinc-400 mb-3">
-              <Film className="w-5 h-5" />
+          <div className="py-20 text-center rounded-3xl border border-dashed border-zinc-850 p-8 max-w-lg mx-auto bg-zinc-950/40">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 mx-auto flex items-center justify-center text-zinc-400 mb-3 shadow-inner">
+              <Film className="w-5 h-5 text-zinc-400" />
             </div>
             <h3 className="text-base font-semibold text-white">Tidak ada tontonan ditemukan</h3>
-            <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
+            <p className="text-xs text-zinc-500 mt-1.5 max-w-sm mx-auto leading-relaxed">
               {searchQuery
-                ? `Tidak ada hasil untuk pencarian "${searchQuery}". Coba kata kunci lain.`
-                : 'Belum ada tontonan di kategori ini. Klik "Tambah" untuk menambahkan tontonan baru ke Notion.'}
+                ? `Tidak ada hasil yang cocok dengan kata kunci "${searchQuery}".`
+                : 'Belum ada tontonan dalam filter ini.'}
             </p>
+            <div className="mt-5 flex items-center justify-center gap-2">
+              {searchQuery ? (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 transition"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reset Pencarian</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsAddOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-zinc-200 text-black shadow-md transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Tontonan</span>
+                </button>
+              )}
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 animate-in fade-in duration-300">
             {filteredItems.map((item) => (
               <WatchlistCard
                 key={item.id}
